@@ -80,103 +80,90 @@ export function Navigation({ currentSection, onSectionChange, onCollapseChange }
         </div>
 
         {/* Navigation Items */}
-        <div className={cn("flex-1", isCollapsed ? "p-2" : "p-6")}>
-          {!isCollapsed && (
-            <div className="mb-6">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Navegação</p>
-            </div>
-          )}
-          <nav className={cn("space-y-2", isCollapsed && "mt-6")}>
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentSection === item.id;
-              
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleSectionClick(item.id)}
-                  className={cn(
-                    'w-full flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-lg group',
-                                          isActive
-                        ? 'bg-brand-50 text-brand-700 shadow-sm'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  )}
-                  title={isCollapsed ? item.label : undefined}
-                >
-                  <Icon 
-                    className={cn(
-                      'h-5 w-5 transition-colors', 
-                      isCollapsed ? 'mx-auto' : 'mr-3',
-                      isActive ? 'text-brand-600' : 'text-gray-400 group-hover:text-gray-600'
-                    )}
-                  />
-                  {!isCollapsed && (
-                    <span>{item.label}</span>
-                  )}
-                  {isActive && !isCollapsed && (
-                    <div className="ml-auto">
-                      <ArrowRight className="h-4 w-4 text-brand-500" />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* AI Insights Card */}
-          {!isCollapsed && (
-            <div className="mt-8">
-              <div className="relative rounded-xl p-6 shadow-lg overflow-hidden" style={{ backgroundColor: '#4220F3' }}>
-                
-                <div className="flex flex-col items-center text-center space-y-4 relative z-10">
-                  <div className="flex-shrink-0">
-                    <img 
-                      src="/ORBIS_ICON.svg" 
-                      alt="Orbis Icon" 
-                      className="h-8 w-8"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-semibold text-white leading-tight">
-                      Insights via<br />Satélites + IA
-                    </h3>
-                    <p className="text-xs text-white/70 mt-1">Análise de dados open-source em tempo real</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="bg-white/90 hover:bg-white text-brand-700 px-6 py-2.5 h-auto rounded-full transition-all duration-200 w-full shadow-md hover:shadow-lg"
-                  >
-                    <span className="text-sm font-medium">Ver insights</span>
-                    <ArrowRight className="h-4 w-4 ml-2 text-brand-600" />
-                  </Button>
-                </div>
+        <div className={cn("flex-1 overflow-y-auto", isCollapsed ? "p-2" : "p-6")}>
+          <div className="h-full flex flex-col">
+            {!isCollapsed && (
+              <div className="mb-6 flex-shrink-0">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Navegação</p>
               </div>
+            )}
+            
+            <div className="flex-1 overflow-y-auto">
+              <nav className={cn("space-y-2", isCollapsed && "mt-6")}>
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = currentSection === item.id;
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSectionClick(item.id)}
+                      className={cn(
+                        'w-full flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-lg group',
+                                              isActive
+                            ? 'bg-brand-50 text-brand-700 shadow-sm'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      )}
+                      title={isCollapsed ? item.label : undefined}
+                    >
+                      <Icon 
+                        className={cn(
+                          'h-5 w-5 transition-colors', 
+                          isCollapsed ? 'mx-auto' : 'mr-3',
+                          isActive ? 'text-brand-600' : 'text-gray-400 group-hover:text-gray-600'
+                        )}
+                      />
+                      {!isCollapsed && (
+                        <span>{item.label}</span>
+                      )}
+                      {isActive && !isCollapsed && (
+                        <div className="ml-auto">
+                          <ArrowRight className="h-4 w-4 text-brand-500" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* AI Insights Card */}
+              {!isCollapsed && (
+                <div className="mt-8 flex-shrink-0">
+                  <div className="relative rounded-xl p-6 shadow-lg overflow-hidden" style={{ backgroundColor: '#4220F3' }}>
+                    
+                    <div className="flex flex-col items-center text-center space-y-4 relative z-10">
+                      <div className="flex-shrink-0">
+                        <img 
+                          src="/ORBIS_ICON.svg" 
+                          alt="Orbis Icon" 
+                          className="h-8 w-8"
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-white leading-tight">
+                          Insights via<br />Satélites + IA
+                        </h3>
+                        <p className="text-xs text-white/70 mt-1">Análise de dados open-source em tempo real</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="bg-white/90 hover:bg-white text-brand-700 px-6 py-2.5 h-auto rounded-full transition-all duration-200 w-full shadow-md hover:shadow-lg"
+                      >
+                        <span className="text-sm font-medium">Ver insights</span>
+                        <ArrowRight className="h-4 w-4 ml-2 text-brand-600" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Settings & Profile Section */}
         <div className={cn("space-y-2 border-t border-gray-100 mt-auto", isCollapsed ? "p-2" : "p-6")}>
-          {!isCollapsed && (
-            <div className="mb-4">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Configurações</p>
-            </div>
-          )}
-          
 
-          {/* Settings */}
-          <button
-            className={cn(
-              'w-full flex items-center rounded-lg px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors'
-            )}
-            title={isCollapsed ? 'Configurações' : undefined}
-          >
-            <Settings className={cn('h-5 w-5 text-gray-400', isCollapsed ? 'mx-auto' : 'mr-3')} />
-            {!isCollapsed && <span>Configurações</span>}
-          </button>
-
-          {/* User Profile */}
           {!isCollapsed && (
             <div className="pt-4">
               <div className="flex items-center space-x-3 px-4 py-4 rounded-xl bg-gray-50 border border-gray-100">
@@ -203,7 +190,6 @@ export function Navigation({ currentSection, onSectionChange, onCollapseChange }
             </div>
           )}
 
-          {/* Collapsed User Avatar */}
           {isCollapsed && (
             <div className="pt-4">
               <button 

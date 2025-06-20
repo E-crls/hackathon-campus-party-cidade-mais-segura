@@ -271,26 +271,121 @@ export function KanbanBoard() {
     <div className="h-full bg-gray-50 p-4 overflow-hidden flex flex-col">
       <div className="w-full flex flex-col h-full">
         
-        {/* Header - Compacto */}
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1 flex items-center space-x-3">
-              <span>Gestão de Tarefas</span>
-              {(isCreating || isUpdating) && (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-600"></div>
-                  <span className="text-sm text-brand-600">Sincronizando...</span>
-                </div>
-              )}
-            </h1>
-            <p className="text-sm text-gray-600">
-              Tarefas identificadas automaticamente via satélites • {tasks.length} tarefas
-            </p>
+        {/* Header */}
+        <div className="mb-4">
+          {/* Título e Info */}
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-4 gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1 flex items-center space-x-3">
+                <span>Gestão de Tarefas</span>
+                {(isCreating || isUpdating) && (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-600"></div>
+                    <span className="text-sm text-brand-600">Sincronizando...</span>
+                  </div>
+                )}
+              </h1>
+              <p className="text-sm text-gray-600">
+                Tarefas identificadas automaticamente via satélites • {tasks.length} tarefas
+              </p>
+            </div>
+            
+            {/* Botões e Status - Desktop */}
+            <div className="hidden lg:flex items-center space-x-4">
+              {/* Status do webhook */}
+              <div className="flex items-center space-x-2">
+                <Wifi className="h-4 w-4 text-green-500" />
+                <span className="text-xs text-green-600">Webhook ativo</span>
+              </div>
+              
+              {/* Botão de configuração do webhook */}
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => setShowWebhookInfo(true)}
+                className="text-xs"
+              >
+                <Settings className="h-3 w-3 mr-1" />
+                Webhook
+              </Button>
+              
+              {/* Botão para simular webhook (apenas para demonstração) */}
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={handleSimulateWebhook}
+                className="text-xs"
+              >
+                Simular Webhook
+              </Button>
+              
+              <div className="flex items-center space-x-2 text-xs text-gray-500">
+                <Calendar className="h-3 w-3" />
+                <span>20 de dezembro de 2024</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center space-x-4">
+
+          {/* Filtros e Busca */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Busca */}
+            <div className="flex-1 min-w-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar tarefas..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                />
+              </div>
+            </div>
+            
+            {/* Filtros e Botões */}
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm min-w-[100px]"
+              >
+                <option value="all">Tipos</option>
+                <option value="trash">Lixo</option>
+                <option value="lighting">Iluminação</option>
+                <option value="fire">Incêndio</option>
+                <option value="flood">Inundação</option>
+                <option value="crime">Crime</option>
+              </select>
+
+              <select
+                value={filterPriority}
+                onChange={(e) => setFilterPriority(e.target.value)}
+                className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm min-w-[120px]"
+              >
+                <option value="all">Prioridades</option>
+                <option value="Crítica">Crítica</option>
+                <option value="Alta">Alta</option>
+                <option value="Média">Média</option>
+                <option value="Baixa">Baixa</option>
+              </select>
+
+              <Button 
+                size="sm" 
+                className="bg-brand-500 hover:bg-brand-600 text-white"
+                onClick={() => setShowNewTaskModal(true)}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Nova</span>
+                <span className="sm:hidden">+</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Botões Mobile - Abaixo dos filtros */}
+          <div className="lg:hidden mt-3 flex flex-wrap gap-2">
             {/* Status do webhook */}
-            <div className="flex items-center space-x-2">
-              <Wifi className="h-4 w-4 text-green-500" />
+            <div className="flex items-center space-x-2 bg-green-50 px-2 py-1 rounded-full">
+              <Wifi className="h-3 w-3 text-green-500" />
               <span className="text-xs text-green-600">Webhook ativo</span>
             </div>
             
@@ -305,71 +400,16 @@ export function KanbanBoard() {
               Webhook
             </Button>
             
-            {/* Botão para simular webhook (apenas para demonstração) */}
+            {/* Botão para simular webhook */}
             <Button 
               size="sm" 
               variant="outline"
               onClick={handleSimulateWebhook}
               className="text-xs"
             >
-              Simular Webhook
+              Simular
             </Button>
-            
-            <div className="flex items-center space-x-2 text-xs text-gray-500">
-              <Calendar className="h-3 w-3" />
-              <span>20 de dezembro de 2024</span>
-            </div>
           </div>
-        </div>
-
-        {/* Filters and Search - Compacto */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          <div className="flex-1 min-w-48">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar tarefas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-              />
-            </div>
-          </div>
-          
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm"
-          >
-            <option value="all">Tipos</option>
-            <option value="trash">Lixo</option>
-            <option value="lighting">Iluminação</option>
-            <option value="fire">Incêndio</option>
-            <option value="flood">Inundação</option>
-            <option value="crime">Crime</option>
-          </select>
-
-          <select
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-            className="pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm"
-          >
-            <option value="all">Prioridades</option>
-            <option value="Crítica">Crítica</option>
-            <option value="Alta">Alta</option>
-            <option value="Média">Média</option>
-            <option value="Baixa">Baixa</option>
-          </select>
-
-          <Button 
-            size="sm" 
-            className="bg-brand-500 hover:bg-brand-600 text-white"
-            onClick={() => setShowNewTaskModal(true)}
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            <span className="hidden sm:inline">Nova</span>
-          </Button>
         </div>
 
         {/* Kanban Board */}

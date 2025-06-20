@@ -207,14 +207,48 @@ export function Dashboard() {
           <div className="lg:col-span-2">
             <Card className="bg-white shadow-sm border border-gray-200 h-full min-h-[500px] flex flex-col">
               <CardHeader className="pb-4">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg text-gray-900 flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center">
-                      <MapPin className="h-5 w-5 text-brand-500" />
+                <div className="flex flex-col space-y-4">
+                  {/* Título */}
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-lg text-gray-900 flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-brand-50 rounded-lg flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-brand-500" />
+                      </div>
+                      <span>Desordens Urbanas</span>
+                    </CardTitle>
+                    
+                    {/* Filtros - Desktop */}
+                    <div className="hidden lg:flex space-x-2">
+                      <FilterButton 
+                        active={activeFilter === 'Todos'} 
+                        label="Todos" 
+                        onClick={() => setActiveFilter('Todos')}
+                      />
+                      <FilterButton 
+                        active={activeFilter === 'Lixo'} 
+                        label="Lixo" 
+                        onClick={() => setActiveFilter('Lixo')}
+                      />
+                      <FilterButton 
+                        active={activeFilter === 'Iluminação'} 
+                        label="Iluminação" 
+                        onClick={() => setActiveFilter('Iluminação')}
+                      />
+                      <FilterButton 
+                        active={activeFilter === 'Incêndios'} 
+                        label="Incêndios" 
+                        onClick={() => setActiveFilter('Incêndios')}
+                      />
+                      <FilterButton 
+                        active={activeFilter === 'Crimes'} 
+                        label="Crimes" 
+                        onClick={() => setActiveFilter('Crimes')}
+                      />
                     </div>
-                    <span className="whitespace-nowrap">Desordens Urbanas</span>
-                  </CardTitle>
-                  <div className="flex space-x-2">
+                  </div>
+                  
+                  {/* Filtros - Mobile/Tablet */}
+                  <div className="lg:hidden flex flex-wrap gap-2">
                     <FilterButton 
                       active={activeFilter === 'Todos'} 
                       label="Todos" 
