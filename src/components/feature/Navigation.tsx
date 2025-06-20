@@ -31,7 +31,6 @@ const navigationItems = [
 ];
 
 export function Navigation({ currentSection, onSectionChange, onCollapseChange }: NavigationProps) {
-  const { theme, toggleTheme } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleSectionClick = (sectionId: string) => {
@@ -168,21 +167,6 @@ export function Navigation({ currentSection, onSectionChange, onCollapseChange }
             </div>
           )}
           
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className={cn(
-              'w-full flex items-center rounded-lg px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors'
-            )}
-            title={isCollapsed ? 'Alternar tema' : undefined}
-          >
-            {theme === 'dark' ? (
-              <Sun className={cn('h-5 w-5 text-gray-400', isCollapsed ? 'mx-auto' : 'mr-3')} />
-            ) : (
-              <Moon className={cn('h-5 w-5 text-gray-400', isCollapsed ? 'mx-auto' : 'mr-3')} />
-            )}
-            {!isCollapsed && <span>Tema</span>}
-          </button>
 
           {/* Settings */}
           <button

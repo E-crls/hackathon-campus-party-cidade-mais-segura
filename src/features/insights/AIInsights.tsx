@@ -346,9 +346,6 @@ const AIInsights: React.FC = () => {
                   <span>Fonte: {insight.source}</span>
                 </div>
                 
-                <button className="text-brand-600 hover:text-brand-700 font-medium">
-                  Ver detalhes
-                </button>
               </div>
             </div>
           ))}
