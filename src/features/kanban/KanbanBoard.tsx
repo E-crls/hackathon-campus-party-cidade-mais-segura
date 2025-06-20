@@ -778,7 +778,7 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
                 )}></div>
                 <span className="font-medium text-gray-900">
                   {task.status === 'todo' ? 'A Fazer' :
-                   task.status === 'in-progress' ? 'Fazendo' :
+                   task.status === 'in-progress' ? 'Em Andamento' :
                    'Concluído'}
                 </span>
               </div>

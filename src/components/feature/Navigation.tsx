@@ -6,7 +6,6 @@ import {
   User, 
   ChevronLeft,
   ChevronRight,
-  Settings,
   LogOut,
   ArrowRight,
   Trello
