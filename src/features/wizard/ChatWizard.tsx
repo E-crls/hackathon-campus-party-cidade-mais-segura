@@ -209,53 +209,65 @@ function ChatWizardSidebar({
   onClearMessages 
 }: ChatWizardSidebarProps) {
     return (
-      <div className="h-full flex flex-col bg-white">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-9 h-9 bg-brand-100 rounded-xl flex items-center justify-center">
-              <Sparkles className="h-5 w-5 text-brand-600" />
+      <div className="h-[100vh] flex flex-col bg-white border border-gray-200 rounded-lg shadow-sm">
+        {/* Header */}
+        <div className="p-4 border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-9 h-9 bg-brand-100 rounded-xl flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-brand-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">Assistente IA</h3>
+                <p className="text-xs text-gray-500">Análise inteligente</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900">Assistente IA</h3>
-              <p className="text-xs text-gray-500">Análise inteligente</p>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearMessages}
+              className="text-xs text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+            >
+              Limpar
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearMessages}
-            className="text-xs text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
-          >
-            Limpar
-          </Button>
         </div>
-      </div>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {messages.map((message) => (
-            <ChatMessageBubble
-              key={message.id}
-              message={message}
-            onSuggestionClick={onSuggestionClick}
-              isCompact={true}
-            />
-          ))}
-          
-          {isTyping && <TypingIndicator />}
-          <div ref={messagesEndRef} />
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="text-center">
+                <Bot className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                <p className="text-sm font-medium mb-1">Assistente IA</p>
+                <p className="text-xs">Faça uma pergunta para começar.</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <ChatMessageBubble
+                  key={message.id}
+                  message={message}
+                  onSuggestionClick={onSuggestionClick}
+                  isCompact={true}
+                />
+              ))}
+              
+              {isTyping && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </>
+          )}
         </div>
 
-      {/* Input */}
+        {/* Input */}
         <div className="flex-shrink-0 p-4 border-t border-gray-200 bg-white">
-        <MessageInput
-          onSubmit={onSubmit}
-          isTyping={isTyping}
-          placeholder={placeholder}
-          isCompact={true}
-        />
+          <MessageInput
+            onSubmit={onSubmit}
+            isTyping={isTyping}
+            placeholder={placeholder}
+            isCompact={true}
+          />
         </div>
       </div>
     );
@@ -293,8 +305,8 @@ function ChatWizardFullPage({
                   <Sparkles className="h-7 w-7 text-brand-600" />
                 </div>
                 <span>Chat Inteligente</span>
-          </h1>
-          <p className="text-gray-600">
+              </h1>
+              <p className="text-gray-600">
                 Converse com a IA para análise de desordens urbanas
               </p>
             </div>
@@ -310,8 +322,8 @@ function ChatWizardFullPage({
         </div>
 
         {/* Chat Container */}
-        <Card className="h-[600px] flex flex-col bg-white shadow-sm">
-          <CardHeader className="border-b border-gray-200">
+        <Card className="h-[calc(100vh-300px)] min-h-[500px] max-h-[700px] flex flex-col bg-white shadow-sm">
+          <CardHeader className="border-b border-gray-200 flex-shrink-0">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-gray-900">
                 <div className="text-xs text-gray-500">
@@ -322,20 +334,32 @@ function ChatWizardFullPage({
             </CardTitle>
           </CardHeader>
           
-          <CardContent className="flex-1 flex flex-col p-0">
+          <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
             {/* Messages */}
             <div className="flex-1 overflow-y-auto space-y-3 p-4 pr-2">
-              {messages.map((message) => (
-                <ChatMessageBubble
-                  key={message.id}
-                  message={message}
-                  onSuggestionClick={onSuggestionClick}
-                  isCompact={false}
-                />
-              ))}
-              
-              {isTyping && <TypingIndicator />}
-              <div ref={messagesEndRef} />
+              {messages.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <div className="text-center">
+                    <Bot className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-lg font-medium mb-2">Bem-vindo ao Chat Inteligente!</p>
+                    <p className="text-sm">Faça uma pergunta sobre desordens urbanas para começar.</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {messages.map((message) => (
+                    <ChatMessageBubble
+                      key={message.id}
+                      message={message}
+                      onSuggestionClick={onSuggestionClick}
+                      isCompact={false}
+                    />
+                  ))}
+                  
+                  {isTyping && <TypingIndicator />}
+                  <div ref={messagesEndRef} />
+                </>
+              )}
             </div>
 
             {/* Input */}
