@@ -16,106 +16,23 @@ import {
   X,
   Save,
   User,
-  FileText
+  FileText,
+  Wifi,
+  WifiOff,
+  Settings,
+  Phone,
+  Image,
+  CheckCircle,
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { WebhookInfo } from '../../components/ui/WebhookInfo';
 import { cn } from '../../utils/cn';
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  type: 'trash' | 'lighting' | 'fire' | 'flood' | 'crime';
-  priority: 'Alta' | 'Média' | 'Baixa';
-  status: 'todo' | 'in-progress' | 'done';
-  assignee: string;
-  location: string;
-  dueDate: string;
-  createdAt: string;
-  aiConfidence: number;
-}
-
-const mockTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Limpeza de lixo acumulado',
-    description: 'Detecção satelital: acúmulo de resíduos em área urbana (imagens Sentinel-2)',
-    type: 'trash',
-    priority: 'Alta',
-    status: 'todo',
-    assignee: 'Equipe Limpeza A',
-    location: 'Brasília Centro',
-    dueDate: '2024-12-25',
-    createdAt: '2024-12-20',
-    aiConfidence: 95
-  },
-  {
-    id: '2',
-    title: 'Reparo de iluminação pública',
-    description: 'Análise noturna satelital detectou ausência de iluminação (NASA VIIRS)',
-    type: 'lighting',
-    priority: 'Alta',
-    status: 'in-progress',
-    assignee: 'Elétrica MSP',
-    location: 'Taguatinga Norte',
-    dueDate: '2024-12-23',
-    createdAt: '2024-12-19',
-    aiConfidence: 87
-  },
-  {
-    id: '3',
-    title: 'Prevenção de incêndio',
-    description: 'Satélites MODIS detectaram vegetação seca e alta temperatura superficial',
-    type: 'fire',
-    priority: 'Média',
-    status: 'in-progress',
-    assignee: 'Bombeiros DF',
-    location: 'Ceilândia Sul',
-    dueDate: '2024-12-28',
-    createdAt: '2024-12-18',
-    aiConfidence: 78
-  },
-  {
-    id: '4',
-    title: 'Drenagem preventiva',
-    description: 'Dados topográficos SRTM indicam área de acúmulo hídrico',
-    type: 'flood',
-    priority: 'Média',
-    status: 'todo',
-    assignee: 'Infraestrutura DF',
-    location: 'Sobradinho',
-    dueDate: '2024-12-30',
-    createdAt: '2024-12-17',
-    aiConfidence: 82
-  },
-  {
-    id: '5',
-    title: 'Patrulhamento reforçado',
-    description: 'Correlação de dados: baixa iluminação + histórico criminal (dados abertos SSP)',
-    type: 'crime',
-    priority: 'Alta',
-    status: 'done',
-    assignee: 'PMDF Setor 12',
-    location: 'Asa Norte',
-    dueDate: '2024-12-22',
-    createdAt: '2024-12-16',
-    aiConfidence: 91
-  },
-  {
-    id: '6',
-    title: 'Instalação de câmeras',
-    description: 'Análise OpenStreetMap + dados criminais: área com baixa cobertura de segurança',
-    type: 'crime',
-    priority: 'Média',
-    status: 'todo',
-    assignee: 'Segurança Tech',
-    location: 'Samambaia',
-    dueDate: '2024-12-27',
-    createdAt: '2024-12-20',
-    aiConfidence: 73
-  }
-];
+import { useTasks, convertWebhookToTask, type Task, type CreateTaskData } from '../../hooks/useTasks';
+import { useSimpleWebhook } from '../../hooks/useSimpleWebhook';
 
 const columns = [
   { id: 'todo', title: 'A Fazer', color: 'bg-brand-100' },
@@ -124,19 +41,35 @@ const columns = [
 ];
 
 export function KanbanBoard() {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
+  // Hooks do TanStack Query
+  const { 
+    tasks, 
+    isLoading, 
+    error, 
+    createTask, 
+    updateTask, 
+    deleteTask,
+    isCreating,
+    isUpdating,
+    refetch
+  } = useTasks();
+  
+  // Hook para escutar webhooks simples
+  useSimpleWebhook();
+
+  // Estados locais
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
   const [showNewTaskModal, setShowNewTaskModal] = useState(false);
   const [showTaskDetails, setShowTaskDetails] = useState<string | null>(null);
-  const [newTask, setNewTask] = useState<Partial<Task>>({
+  const [showWebhookInfo, setShowWebhookInfo] = useState(false);
+  const [newTask, setNewTask] = useState<Partial<CreateTaskData>>({
     title: '',
     description: '',
     type: 'trash',
     priority: 'Média',
-    status: 'todo',
     assignee: '',
     location: '',
     dueDate: '',
@@ -157,11 +90,10 @@ export function KanbanBoard() {
   };
 
   const moveTask = (taskId: string, newStatus: string) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId ? { ...task, status: newStatus as Task['status'] } : task
-      )
-    );
+    updateTask({
+      id: taskId,
+      status: newStatus as Task['status']
+    });
   };
 
   const handleDragStart = (e: DragEvent<HTMLDivElement>, taskId: string) => {
@@ -188,27 +120,22 @@ export function KanbanBoard() {
 
   const handleCreateTask = () => {
     if (newTask.title && newTask.description) {
-      const task: Task = {
-        id: Date.now().toString(),
+      const taskData: CreateTaskData = {
         title: newTask.title,
         description: newTask.description,
         type: newTask.type as Task['type'],
         priority: newTask.priority as Task['priority'],
-        status: newTask.status as Task['status'],
         assignee: newTask.assignee || 'Não atribuído',
         location: newTask.location || 'Local não especificado',
         dueDate: newTask.dueDate || new Date().toISOString().split('T')[0],
-        createdAt: new Date().toISOString().split('T')[0],
-        aiConfidence: Math.floor(Math.random() * 30) + 70 // Random between 70-99
       };
       
-      setTasks(prev => [...prev, task]);
+      createTask(taskData);
       setNewTask({
         title: '',
         description: '',
         type: 'trash',
         priority: 'Média',
-        status: 'todo',
         assignee: '',
         location: '',
         dueDate: '',
@@ -241,12 +168,105 @@ export function KanbanBoard() {
 
   const getPriorityColor = (priority: Task['priority']) => {
     const colors = {
-      'Alta': 'bg-red-100 text-red-700',
-      'Média': 'bg-brand-100 text-brand-700',
-      'Baixa': 'bg-green-100 text-green-700',
+      'Crítica': 'bg-red-100 text-red-700',
+      'Alta': 'bg-orange-100 text-orange-700',
+      'Média': 'bg-yellow-100 text-yellow-700',
+      'Baixa': 'bg-blue-100 text-blue-700',
     };
     return colors[priority];
   };
+
+  // Função para simular webhook (para demonstração)
+  const handleSimulateWebhook = () => {
+    const sampleWebhookData = {
+      incident_id: `incident-${Date.now()}`,
+      user_phone: "+5561999999999",
+      collected_data: {
+        type: "lixo" as const,
+        description: "Acúmulo de lixo na calçada reportado via app móvel",
+        location: "Rua das Flores, 123 - Brasília/DF",
+        urgency: "media" as const,
+        photos: ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."],
+        coordinates: {
+          lat: -15.7942,
+          lng: -47.8822
+        }
+      },
+      ai_analysis: {
+        confidence: 87,
+        priority: "media" as const,
+        classification: "validated" as const
+      },
+      timestamp: new Date().toISOString()
+    };
+    
+    // Salvar no localStorage para simular webhook
+    const existing = JSON.parse(localStorage.getItem('pending_webhooks') || '[]');
+    existing.push(sampleWebhookData);
+    localStorage.setItem('pending_webhooks', JSON.stringify(existing));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="h-full bg-gray-50 p-4 overflow-hidden flex flex-col relative">
+        {/* Interface base (desfocada) */}
+        <div className="w-full flex flex-col h-full opacity-30 blur-sm">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Gestão de Tarefas</h1>
+              <p className="text-sm text-gray-600">Carregando dados...</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-hidden">
+            <div className="grid grid-cols-3 gap-4 h-full">
+              {columns.map((column) => (
+                <div key={column.id} className="flex flex-col">
+                  <div className="h-full flex flex-col bg-white shadow-sm border border-gray-200 rounded-lg">
+                    <div className="p-4 pb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className={cn('w-3 h-3 rounded-full', column.color)}></div>
+                        <span className="text-base font-semibold">{column.title}</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 px-3 pb-3"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Overlay de Loading */}
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 text-center">
+            <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-sm font-medium text-gray-900 mb-2">
+              Carregando Tarefas
+            </div>
+            <div className="text-xs text-gray-500">
+              Sincronizando dados em tempo real...
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Erro ao carregar tarefas</h2>
+          <p className="text-gray-600 mb-4">Não foi possível conectar com o servidor</p>
+          <Button onClick={() => refetch()} variant="outline">
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full bg-gray-50 p-4 overflow-hidden flex flex-col">
@@ -255,16 +275,51 @@ export function KanbanBoard() {
         {/* Header - Compacto */}
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
-              Gestão de Tarefas
+            <h1 className="text-2xl font-bold text-gray-900 mb-1 flex items-center space-x-3">
+              <span>Gestão de Tarefas</span>
+              {(isCreating || isUpdating) && (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand-600"></div>
+                  <span className="text-sm text-brand-600">Sincronizando...</span>
+                </div>
+              )}
             </h1>
             <p className="text-sm text-gray-600">
-              Tarefas identificadas automaticamente via satélites
+              Tarefas identificadas automaticamente via satélites • {tasks.length} tarefas
             </p>
           </div>
-          <div className="flex items-center space-x-2 text-xs text-gray-500">
-            <Calendar className="h-3 w-3" />
-            <span>20 de dezembro de 2024</span>
+          <div className="flex items-center space-x-4">
+            {/* Status do webhook */}
+            <div className="flex items-center space-x-2">
+              <Wifi className="h-4 w-4 text-green-500" />
+              <span className="text-xs text-green-600">Webhook ativo</span>
+            </div>
+            
+            {/* Botão de configuração do webhook */}
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => setShowWebhookInfo(true)}
+              className="text-xs"
+            >
+              <Settings className="h-3 w-3 mr-1" />
+              Webhook
+            </Button>
+            
+            {/* Botão para simular webhook (apenas para demonstração) */}
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={handleSimulateWebhook}
+              className="text-xs"
+            >
+              Simular Webhook
+            </Button>
+            
+            <div className="flex items-center space-x-2 text-xs text-gray-500">
+              <Calendar className="h-3 w-3" />
+              <span>20 de dezembro de 2024</span>
+            </div>
           </div>
         </div>
 
@@ -302,6 +357,7 @@ export function KanbanBoard() {
             className="pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm"
           >
             <option value="all">Prioridades</option>
+            <option value="Crítica">Crítica</option>
             <option value="Alta">Alta</option>
             <option value="Média">Média</option>
             <option value="Baixa">Baixa</option>
@@ -388,15 +444,21 @@ export function KanbanBoard() {
             getPriorityColor={getPriorityColor}
           />
         )}
-            </div>
+
+        {/* Modal de Informações do Webhook */}
+        <WebhookInfo
+          isVisible={showWebhookInfo}
+          onClose={() => setShowWebhookInfo(false)}
+        />
+      </div>
     </div>
   );
 }
 
 // Modal para Nova Tarefa
 interface NewTaskModalProps {
-  newTask: Partial<Task>;
-  setNewTask: (task: Partial<Task>) => void;
+  newTask: Partial<CreateTaskData>;
+  setNewTask: (task: Partial<CreateTaskData>) => void;
   onSave: () => void;
   onClose: () => void;
 }
@@ -748,6 +810,22 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
           <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', getPriorityColor(task.priority))}>
             {task.priority}
           </span>
+          {/* Indicador de origem webhook */}
+          {task.incident_id && (
+            <div className="flex items-center space-x-1">
+              <Phone className="h-3 w-3 text-green-500" title="Reportado via app móvel" />
+              {task.photos && task.photos.length > 0 && (
+                <Image className="h-3 w-3 text-blue-500" title={`${task.photos.length} foto(s)`} />
+              )}
+              {task.classification && (
+                <div className="flex items-center">
+                  {task.classification === 'validated' && <CheckCircle className="h-3 w-3 text-green-500" title="Validado pela IA" />}
+                  {task.classification === 'pending' && <AlertCircle className="h-3 w-3 text-yellow-500" title="Pendente validação" />}
+                  {task.classification === 'rejected' && <XCircle className="h-3 w-3 text-red-500" title="Rejeitado pela IA" />}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className="relative">
           <button

@@ -45,8 +45,108 @@ export function Dashboard() {
 
   if (isLoading || !kpiData) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50">
-        <LoadingSpinner message="Carregando dados do dashboard..." />
+      <div className="h-full bg-gray-50 p-6 overflow-y-auto relative">
+        {/* Interface base (desfocada) */}
+        <div className="max-w-7xl mx-auto space-y-6 opacity-30 blur-sm">
+          
+          {/* Header Section */}
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl text-gray-900 mb-2">
+                <span className="font-semibold">Olá, Gestor MSP</span>
+              </h1>
+              <p className="text-gray-600">
+                Carregando dados do dashboard...
+              </p>
+            </div>
+            <div className="flex items-center space-x-4 text-sm text-gray-500">
+              <Calendar className="h-4 w-4" />
+              <span>20 de dezembro de 2024</span>
+            </div>
+          </div>
+
+          {/* Key Metrics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="bg-white shadow-sm border border-gray-200">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium text-gray-600">Carregando...</h3>
+                    <div className="w-10 h-10 bg-gray-50 rounded-xl"></div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-3xl font-bold text-gray-900">--</div>
+                    <div className="text-sm text-gray-500">Aguarde...</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Mapa */}
+            <div className="lg:col-span-2">
+              <Card className="bg-white shadow-sm border border-gray-200 h-full min-h-[500px]">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg text-gray-900">Desordens Urbanas</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 flex-1 min-h-0 bg-gray-100 rounded-b-lg"></CardContent>
+              </Card>
+            </div>
+
+            {/* Análises */}
+            <div>
+              <Card className="bg-white shadow-sm border border-gray-200 h-full">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg text-gray-900">Análises IA</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 flex-1">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-100 rounded"></div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Tasks */}
+          <Card className="bg-white shadow-sm border border-gray-200">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg text-gray-900">Tarefas Prioritárias</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+                    <div className="w-12 h-12 bg-gray-50 rounded-xl"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-3 bg-gray-100 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Overlay de Loading */}
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-200 text-center">
+            <div className="w-16 h-16 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-sm font-medium text-gray-900 mb-2">
+              Carregando Dashboard
+            </div>
+            <div className="text-xs text-gray-500">
+              Sincronizando dados em tempo real...
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

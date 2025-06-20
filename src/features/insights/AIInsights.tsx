@@ -120,28 +120,28 @@ const AIInsights: React.FC = () => {
 
   const models: PredictionModel[] = [
     {
-      name: 'Crime Prediction Model',
+      name: 'Modelo de Predição de Crimes',
       accuracy: 87.3,
       lastUpdate: '2h atrás',
       status: 'active',
       predictions: 1247
     },
     {
-      name: 'Fire Risk Model',
+      name: 'Modelo de Risco de Incêndio',
       accuracy: 91.8,
       lastUpdate: '4h atrás',
       status: 'active',
       predictions: 892
     },
     {
-      name: 'Flood Risk Model',
+      name: 'Modelo de Risco de Inundação',
       accuracy: 84.2,
       lastUpdate: '1h atrás',
       status: 'training',
       predictions: 634
     },
     {
-      name: 'Urban Disorder Detection',
+      name: 'Detecção de Desordem Urbana',
       accuracy: 93.1,
       lastUpdate: '30min atrás',
       status: 'active',
@@ -171,9 +171,18 @@ const AIInsights: React.FC = () => {
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case 'high': return 'text-red-600 bg-red-50';
-              case 'medium': return 'text-brand-600 bg-brand-50';
+      case 'medium': return 'text-brand-600 bg-brand-50';
       case 'low': return 'text-green-600 bg-green-50';
       default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getImpactLabel = (impact: string) => {
+    switch (impact) {
+      case 'high': return 'Alta';
+      case 'medium': return 'Média';
+      case 'low': return 'Baixa';
+      default: return impact;
     }
   };
 
@@ -192,6 +201,15 @@ const AIInsights: React.FC = () => {
       case 'training': return 'text-brand-600 bg-brand-100';
       case 'error': return 'text-red-600 bg-red-100';
       default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'active': return 'Ativo';
+      case 'training': return 'Treinando';
+      case 'error': return 'Erro';
+      default: return status;
     }
   };
 
@@ -277,7 +295,7 @@ const AIInsights: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium text-gray-900 text-sm">{model.name}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(model.status)}`}>
-                    {model.status}
+                    {getStatusLabel(model.status)}
                   </span>
                 </div>
                 
@@ -316,7 +334,7 @@ const AIInsights: React.FC = () => {
                 </div>
                 
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getImpactColor(insight.impact)}`}>
-                  {insight.impact}
+                  {getImpactLabel(insight.impact)}
                 </span>
               </div>
 
