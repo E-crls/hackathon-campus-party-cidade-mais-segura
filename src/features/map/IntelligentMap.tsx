@@ -98,7 +98,7 @@ const brasiliaIncidents: MapIncident[] = [
   },
 ];
 
-const createCustomIcon = (type: string, severity: string, title: string = '') => {
+const createCustomIcon = (type: string, severity: string) => {
   const getEmoji = (type: string) => {
     switch (type) {
       case 'trash': return '🗑️';
@@ -111,7 +111,6 @@ const createCustomIcon = (type: string, severity: string, title: string = '') =>
   };
 
   const emoji = getEmoji(type);
-  const isNew = title.includes('🚨 NOVO');
   
   return L.divIcon({
     html: `
@@ -921,7 +920,7 @@ const IntelligentMap: React.FC = () => {
                     <Marker
                       key={incident.id}
                       position={[incident.position.lat, incident.position.lng]}
-                      icon={createCustomIcon(incident.type, incident.severity, incident.title)}
+                      icon={createCustomIcon(incident.type, incident.severity)}
                     >
                       <Popup maxWidth={300} className="custom-popup">
                         <div className="p-2 max-w-sm">

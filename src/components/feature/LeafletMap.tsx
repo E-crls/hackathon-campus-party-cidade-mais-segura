@@ -246,7 +246,7 @@ const brasiliaIncidents: MapIncident[] = [
 ];
 
 // Função para criar ícones customizados com animações - Cores por criticidade
-const createCustomIcon = (type: string, severity: string, title: string = '') => {
+const createCustomIcon = (type: string, severity: string) => {
   // Cores específicas para cada nível de severidade
   let backgroundColor = '#4220F3'; // Default brand para medium
   let borderColor = '#4220F3';
@@ -272,10 +272,7 @@ const createCustomIcon = (type: string, severity: string, title: string = '') =>
 
   const emoji = icons[type as keyof typeof icons] || '📍';
   
-  // Detecta se é um alerta novo (baseado no título)
-  const isNewAlert = title.includes('🚨 NOVO');
-  
-  // Animações diferentes baseadas na severidade e se é novo
+  // Animações diferentes baseadas na severidade
   const getAnimation = (severity: string, isNew: boolean = false) => {
     if (isNew) {
       return `
@@ -345,7 +342,7 @@ const createCustomIcon = (type: string, severity: string, title: string = '') =>
           z-index: 2;
           cursor: pointer;
           transition: all 0.3s ease;
-          ${getAnimation(severity, isNewAlert)}
+          ${getAnimation(severity, false)}
         }
         
         .marker-main:hover {
@@ -551,7 +548,7 @@ const LeafletMapComponent: React.FC<LeafletMapProps> = ({
           <Marker
             key={incident.id}
             position={[incident.position.lat, incident.position.lng]}
-            icon={createCustomIcon(incident.type, incident.severity, incident.title)}
+                                  icon={createCustomIcon(incident.type, incident.severity)}
             eventHandlers={{
               click: () => handleMarkerClick(incident),
             }}
