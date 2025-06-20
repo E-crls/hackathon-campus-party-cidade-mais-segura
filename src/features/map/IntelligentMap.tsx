@@ -115,7 +115,7 @@ const createCustomIcon = (type: string, severity: string) => {
   if (severity === 'high') {
     bgColor = '#dc2626'; // vermelho
   } else if (severity === 'low') {
-    bgColor = '#059669'; // verde
+    bgColor = '#2563eb'; // azul
   }
 
   const icons = {
@@ -159,7 +159,7 @@ const getSeverityColor = (severity: string) => {
   switch (severity) {
     case 'high': return 'text-red-600 bg-red-50 border-red-200';
     case 'medium': return 'text-orange-600 bg-orange-50 border-orange-200';
-    case 'low': return 'text-green-600 bg-green-50 border-green-200';
+    case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
     default: return 'text-gray-600 bg-gray-50 border-gray-200';
   }
 };
@@ -711,7 +711,7 @@ const IntelligentMap: React.FC = () => {
                   zoom={11}
                   style={{ height: '100%', width: '100%' }}
                   className="rounded-lg"
-                  key={`map-container-${activeView}-color-fix-v1`}
+                  key={`map-container-${activeView}-blue-low-priority-v2`}
                 >
                   {/* Camada base principal */}
                   <TileLayer

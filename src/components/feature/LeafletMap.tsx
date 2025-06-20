@@ -255,7 +255,7 @@ const createCustomIcon = (type: string, severity: string) => {
   if (severity === 'high') {
     bgColor = '#dc2626'; // vermelho
   } else if (severity === 'low') {
-    bgColor = '#059669'; // verde
+    bgColor = '#2563eb'; // azul
   }
 
   const icons = {
@@ -333,7 +333,7 @@ const LeafletMapComponent: React.FC<LeafletMapProps> = ({
     switch (severity) {
       case 'high': return 'text-red-600 bg-red-50 border-red-200';
       case 'medium': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'low': return 'text-green-600 bg-green-50 border-green-200';
+      case 'low': return 'text-blue-600 bg-blue-50 border-blue-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
@@ -365,7 +365,7 @@ const LeafletMapComponent: React.FC<LeafletMapProps> = ({
   };
 
   return (
-    <div className="w-full h-full min-h-[400px] rounded-lg overflow-hidden relative" key="map-simple-colors-v6">
+    <div className="w-full h-full min-h-[400px] rounded-lg overflow-hidden relative" key="map-blue-low-priority-v7">
       <MapContainer
         center={center}
         zoom={11}
@@ -442,7 +442,7 @@ const LeafletMapComponent: React.FC<LeafletMapProps> = ({
             <span>{filteredIncidents.filter(i => i.severity === 'medium').length} ocorrências médias</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             <span>{filteredIncidents.filter(i => i.severity === 'low').length} ocorrências baixas</span>
           </div>
           <div className="text-gray-600 pt-1 border-t border-gray-200">

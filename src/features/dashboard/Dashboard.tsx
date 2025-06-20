@@ -379,8 +379,8 @@ function TaskItem({ title, status, statusColor, time, priority, icon: Icon }: Ta
 
   const priorityStyles = {
     'Alta': 'bg-red-100 text-red-700',
-    'Média': 'bg-gray-100 text-gray-700',
-    'Baixa': 'bg-gray-100 text-gray-600',
+    'Média': 'bg-orange-100 text-orange-700',
+    'Baixa': 'bg-blue-100 text-blue-700',
   };
 
   return (
