@@ -18,7 +18,7 @@ import {
   User,
   FileText,
   Wifi,
-  WifiOff,
+
   Settings,
   Phone,
   Image,
@@ -28,10 +28,10 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+
 import { WebhookInfo } from '../../components/ui/WebhookInfo';
 import { cn } from '../../utils/cn';
-import { useTasks, convertWebhookToTask, type Task, type CreateTaskData } from '../../hooks/useTasks';
+import { useTasks, type Task, type CreateTaskData } from '../../hooks/useTasks';
 import { useSimpleWebhook } from '../../hooks/useSimpleWebhook';
 
 const columns = [
@@ -47,8 +47,7 @@ export function KanbanBoard() {
     isLoading, 
     error, 
     createTask, 
-    updateTask, 
-    deleteTask,
+    updateTask,
     isCreating,
     isUpdating,
     refetch
@@ -590,20 +589,7 @@ function NewTaskModal({ newTask, setNewTask, onSave, onClose }: NewTaskModalProp
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status Inicial
-                </label>
-                <select
-                  value={newTask.status || 'todo'}
-                  onChange={(e) => setNewTask({ ...newTask, status: e.target.value as Task['status'] })}
-                  className="w-full pl-4 pr-10 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm"
-                >
-                  <option value="todo">A Fazer</option>
-                  <option value="in-progress">Fazendo</option>
-                  <option value="done">Feito</option>
-                </select>
-              </div>
+
             </div>
           </div>
 
@@ -813,15 +799,15 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
           {/* Indicador de origem webhook */}
           {task.incident_id && (
             <div className="flex items-center space-x-1">
-              <Phone className="h-3 w-3 text-green-500" title="Reportado via app móvel" />
+              <Phone className="h-3 w-3 text-green-500" />
               {task.photos && task.photos.length > 0 && (
-                <Image className="h-3 w-3 text-blue-500" title={`${task.photos.length} foto(s)`} />
+                                  <Image className="h-3 w-3 text-blue-500" />
               )}
               {task.classification && (
                 <div className="flex items-center">
-                  {task.classification === 'validated' && <CheckCircle className="h-3 w-3 text-green-500" title="Validado pela IA" />}
-                  {task.classification === 'pending' && <AlertCircle className="h-3 w-3 text-yellow-500" title="Pendente validação" />}
-                  {task.classification === 'rejected' && <XCircle className="h-3 w-3 text-red-500" title="Rejeitado pela IA" />}
+                  {task.classification === 'validated' && <CheckCircle className="h-3 w-3 text-green-500" />}
+                  {task.classification === 'pending' && <AlertCircle className="h-3 w-3 text-yellow-500" />}
+                  {task.classification === 'rejected' && <XCircle className="h-3 w-3 text-red-500" />}
                 </div>
               )}
             </div>

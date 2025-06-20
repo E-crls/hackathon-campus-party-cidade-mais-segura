@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import LeafletMapComponent from '../../components/feature/LeafletMap';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+
 import { useLoading } from '../../hooks/useLoading';
 import { orbisAPI } from '../../services/api';
 import { formatNumber, formatPercentage } from '../../utils/format';

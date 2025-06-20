@@ -75,7 +75,7 @@ export interface UpdateTaskData {
 
 // Configuração da API
 const API_BASE_URL = 'http://localhost:3001/api'; // Substitua pela sua API
-const WEBHOOK_ENDPOINT = `${API_BASE_URL}/webhook/tasks`; // Endpoint para receber webhooks
+
 
 // Função para converter dados do webhook em Task
 export function convertWebhookToTask(webhookData: WebhookIncident): Task {
