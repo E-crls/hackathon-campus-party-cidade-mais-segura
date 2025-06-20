@@ -3,8 +3,6 @@ import {
   BarChart3, 
   Map, 
   Lightbulb, 
-  Sun, 
-  Moon,
   User, 
   ChevronLeft,
   ChevronRight,
@@ -15,7 +13,6 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { Button } from '../ui/Button';
-import { useTheme } from '../../hooks/useTheme';
 
 interface NavigationProps {
   currentSection: string;
