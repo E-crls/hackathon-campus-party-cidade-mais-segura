@@ -51,26 +51,32 @@ export function Navigation({ currentSection, onSectionChange, onCollapseChange }
     )}>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <div className="flex items-center">
-            <img 
-              src="/Logo_Orbis.svg" 
-              alt="Orbis Logo" 
-              className={cn(
-                "transition-all duration-300",
-                isCollapsed ? "w-10" : "w-20"
-              )}
-            />
-          </div>
+        <div className={cn(
+          "flex items-center border-b border-gray-100",
+          isCollapsed ? "justify-center p-4" : "justify-between p-6"
+        )}>
+          {!isCollapsed && (
+            <div className="flex items-center">
+              <img 
+                src="/Logo_Orbis.svg" 
+                alt="Orbis Logo" 
+                className="w-20 transition-all duration-300"
+              />
+            </div>
+          )}
           
           <Button
             variant="ghost"
             size="icon"
             onClick={handleCollapseToggle}
-            className="w-8 h-8 rounded-lg hover:bg-gray-100 border border-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+            className={cn(
+              "rounded-lg hover:bg-gray-100 border border-gray-200 text-gray-500 hover:text-gray-700 transition-colors",
+              isCollapsed ? "w-10 h-10" : "w-8 h-8"
+            )}
+            title={isCollapsed ? "Expandir navegação" : "Recolher navegação"}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             ) : (
               <ChevronLeft className="h-4 w-4" />
             )}
@@ -78,11 +84,13 @@ export function Navigation({ currentSection, onSectionChange, onCollapseChange }
         </div>
 
         {/* Navigation Items */}
-        <div className="flex-1 p-6">
-          <div className="mb-6">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Navegação</p>
-          </div>
-          <nav className="space-y-2">
+        <div className={cn("flex-1", isCollapsed ? "p-2" : "p-6")}>
+          {!isCollapsed && (
+            <div className="mb-6">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Navegação</p>
+            </div>
+          )}
+          <nav className={cn("space-y-2", isCollapsed && "mt-6")}>
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentSection === item.id;
@@ -153,10 +161,12 @@ export function Navigation({ currentSection, onSectionChange, onCollapseChange }
         </div>
 
         {/* Settings & Profile Section */}
-        <div className="p-6 space-y-2 border-t border-gray-100 mt-auto">
-          <div className="mb-4">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Configurações</p>
-          </div>
+        <div className={cn("space-y-2 border-t border-gray-100 mt-auto", isCollapsed ? "p-2" : "p-6")}>
+          {!isCollapsed && (
+            <div className="mb-4">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider px-3">Configurações</p>
+            </div>
+          )}
           
           {/* Theme Toggle */}
           <button

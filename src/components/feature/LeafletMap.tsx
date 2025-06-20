@@ -31,6 +31,7 @@ interface MapIncident {
 interface LeafletMapProps {
   incidents?: MapIncident[];
   onIncidentClick?: (incident: MapIncident) => void;
+  activeFilter?: string;
 }
 
 // Dados reais de desordens urbanas em Brasília
@@ -42,7 +43,7 @@ const brasiliaIncidents: MapIncident[] = [
     position: { lat: -15.7801, lng: -47.9292 },
     title: 'Iluminação - W3 Norte',
     description: 'NASA VIIRS: 12 pontos com iluminação deficiente na W3 Norte',
-    severity: 'medium',
+    severity: 'low',
     region: 'Plano Piloto'
   },
   {
@@ -51,7 +52,7 @@ const brasiliaIncidents: MapIncident[] = [
     position: { lat: -15.7942, lng: -47.8822 },
     title: 'Lixo - Setor Comercial Sul',
     description: 'Sentinel-2: Acúmulo anômalo de resíduos detectado',
-    severity: 'medium',
+    severity: 'low',
     region: 'Plano Piloto'
   },
   
@@ -182,7 +183,7 @@ const brasiliaIncidents: MapIncident[] = [
     position: { lat: -15.8900, lng: -48.1200 },
     title: 'Iluminação Deficiente - Ceilândia Centro',
     description: 'NASA VIIRS: 8 pontos com baixa luminosidade',
-    severity: 'medium',
+    severity: 'low',
     region: 'Ceilândia'
   },
   {
@@ -191,7 +192,7 @@ const brasiliaIncidents: MapIncident[] = [
     position: { lat: -15.8000, lng: -48.0300 },
     title: 'Risco Moderado de Alagamento',
     description: 'SRTM: Área com potencial de acúmulo hídrico',
-    severity: 'medium',
+    severity: 'low',
     region: 'Taguatinga'
   },
   {
@@ -245,21 +246,16 @@ const brasiliaIncidents: MapIncident[] = [
   }
 ];
 
-// Função para criar ícones customizados com animações - Cores por criticidade
+// Função para criar ícones customizados - VERSÃO SIMPLIFICADA
 const createCustomIcon = (type: string, severity: string) => {
-  // Cores específicas para cada nível de severidade
-  let backgroundColor = '#4220F3'; // Default brand para medium
-  let borderColor = '#4220F3';
-  let shadowColor = 'rgba(66, 32, 243, 0.7)';
+  
+  // Determinar cor baseada na severidade
+  let bgColor = '#f59e0b'; // laranja padrão
   
   if (severity === 'high') {
-    backgroundColor = '#dc2626'; // Vermelho para crítico
-    borderColor = '#dc2626';
-    shadowColor = 'rgba(220, 38, 38, 0.7)';
+    bgColor = '#dc2626'; // vermelho
   } else if (severity === 'low') {
-    backgroundColor = '#059669'; // Verde para baixo
-    borderColor = '#059669';
-    shadowColor = 'rgba(5, 150, 105, 0.7)';
+    bgColor = '#059669'; // verde
   }
 
   const icons = {
@@ -271,234 +267,72 @@ const createCustomIcon = (type: string, severity: string) => {
   };
 
   const emoji = icons[type as keyof typeof icons] || '📍';
-  
-  // Animações diferentes baseadas na severidade
-  const getAnimation = (severity: string, isNew: boolean = false) => {
-    if (isNew) {
-      return `
-        animation: newAlert-${severity} 0.8s ease-in-out infinite, criticalPulse-${severity} 1.2s ease-in-out infinite, emergencyFlash-${severity} 3s ease-in-out infinite;
-        @keyframes newAlert-${severity} {
-          0%, 100% { transform: scale(1) rotate(0deg); }
-          25% { transform: scale(1.15) rotate(-2deg); }
-          50% { transform: scale(1.2) rotate(0deg); }
-          75% { transform: scale(1.15) rotate(2deg); }
-        }
-        @keyframes emergencyFlash-${severity} {
-          0%, 90%, 100% { background-color: ${backgroundColor}; }
-          45% { background-color: #ffffff; }
-        }
-      `;
-    }
-    
-    switch (severity) {
-      case 'high':
-        return `
-          animation: criticalPulse-${severity} 1.5s ease-in-out infinite, bounce-${severity} 2s ease-in-out infinite;
-        `;
-      case 'medium':
-        return `
-          animation: mediumPulse-${severity} 2s ease-in-out infinite;
-        `;
-      case 'low':
-        return `
-          animation: lowGlow-${severity} 3s ease-in-out infinite;
-        `;
-      default:
-        return '';
-    }
-  };
 
   return L.divIcon({
     className: 'custom-div-icon',
     html: `
-      <style>
-        .marker-container {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .pulse-ring {
-          position: absolute;
-          border: 3px solid ${borderColor} !important;
-          border-radius: 50%;
-          animation: pulseRing-${severity} 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-          opacity: 0;
-        }
-        
-        .marker-main {
-          background-color: ${backgroundColor} !important;
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          border: 3px solid white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 15px;
-          box-shadow: 0 3px 12px rgba(0,0,0,0.4);
-          position: relative;
-          z-index: 2;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          ${getAnimation(severity, false)}
-        }
-        
-        .marker-main:hover {
-          transform: scale(1.2) !important;
-          box-shadow: 0 5px 20px rgba(0,0,0,0.5) !important;
-        }
-        
-        .marker-pointer {
-          position: absolute;
-          bottom: -10px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 0;
-          height: 0;
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-top: 12px solid ${borderColor} !important;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-        }
-        
-        @keyframes pulseRing-high {
-          0% {
-            transform: scale(0.8);
-            opacity: 1;
-            border-color: ${borderColor};
-          }
-          100% {
-            transform: scale(2.5);
-            opacity: 0;
-            border-color: ${borderColor};
-          }
-        }
-        
-        @keyframes pulseRing-medium {
-          0% {
-            transform: scale(0.8);
-            opacity: 1;
-            border-color: ${borderColor};
-          }
-          100% {
-            transform: scale(2.5);
-            opacity: 0;
-            border-color: ${borderColor};
-          }
-        }
-        
-        @keyframes pulseRing-low {
-          0% {
-            transform: scale(0.8);
-            opacity: 1;
-            border-color: ${borderColor};
-          }
-          100% {
-            transform: scale(2.5);
-            opacity: 0;
-            border-color: ${borderColor};
-          }
-        }
-        
-        @keyframes criticalPulse-high {
-          0%, 100% { 
-            transform: scale(1); 
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4), 0 0 0 0 ${shadowColor}; 
-          }
-          50% { 
-            transform: scale(1.1); 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5), 0 0 0 12px ${shadowColor.replace('0.7', '0')}; 
-          }
-        }
-        
-        @keyframes criticalPulse-medium {
-          0%, 100% { 
-            transform: scale(1); 
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4), 0 0 0 0 ${shadowColor}; 
-          }
-          50% { 
-            transform: scale(1.1); 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5), 0 0 0 12px ${shadowColor.replace('0.7', '0')}; 
-          }
-        }
-        
-        @keyframes criticalPulse-low {
-          0%, 100% { 
-            transform: scale(1); 
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4), 0 0 0 0 ${shadowColor}; 
-          }
-          50% { 
-            transform: scale(1.1); 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5), 0 0 0 12px ${shadowColor.replace('0.7', '0')}; 
-          }
-        }
-        
-        @keyframes bounce-high {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(-6px) scale(1.05); }
-          60% { transform: translateY(-3px) scale(1.02); }
-        }
-        
-        @keyframes bounce-medium {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(-6px) scale(1.05); }
-          60% { transform: translateY(-3px) scale(1.02); }
-        }
-        
-        @keyframes bounce-low {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(-6px) scale(1.05); }
-          60% { transform: translateY(-3px) scale(1.02); }
-        }
-        
-        @keyframes mediumPulse-medium {
-          0%, 100% { 
-            transform: scale(1); 
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4), 0 0 0 0 ${shadowColor}; 
-          }
-          50% { 
-            transform: scale(1.05); 
-            box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 0 0 10px ${shadowColor.replace('0.7', '0')}; 
-          }
-        }
-        
-        @keyframes lowGlow-low {
-          0%, 100% { 
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4); 
-          }
-          50% { 
-            box-shadow: 0 0 20px ${shadowColor}, 0 3px 12px rgba(0,0,0,0.4); 
-          }
-        }
-      </style>
-      
-      <div class="marker-container">
-        <div class="pulse-ring"></div>
-        <div class="marker-main">
-          ${emoji}
-          <div class="marker-pointer"></div>
-        </div>
+      <div style="
+        background-color: ${bgColor} !important;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 3px solid white !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+        position: relative;
+        cursor: pointer;
+        color: white;
+      ">
+        ${emoji}
       </div>
     `,
-    iconSize: [40, 50],
-    iconAnchor: [20, 50],
-    popupAnchor: [0, -50],
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+    popupAnchor: [0, -19],
   });
 };
 
 const LeafletMapComponent: React.FC<LeafletMapProps> = ({ 
   incidents = brasiliaIncidents, 
-  onIncidentClick 
+  onIncidentClick,
+  activeFilter = 'Todos'
 }) => {
   // Centro de Brasília
   const center: [number, number] = [-15.7801, -47.9292];
 
+  // Função para mapear os filtros do Dashboard para os tipos de incidentes
+  const getIncidentTypeFromFilter = (filter: string): string | null => {
+    const filterMap: { [key: string]: string } = {
+      'Lixo': 'trash',
+      'Iluminação': 'lighting',
+      'Incêndios': 'fire',
+      'Crimes': 'crime',
+      'Inundação': 'flood'
+    };
+    return filterMap[filter] || null;
+  };
+
+  // Filtrar incidentes baseado no filtro ativo
+  const filteredIncidents = React.useMemo(() => {
+    if (activeFilter === 'Todos') {
+      return incidents;
+    }
+    
+    const incidentType = getIncidentTypeFromFilter(activeFilter);
+    if (!incidentType) {
+      return incidents; // Se o filtro não for reconhecido, mostra todos
+    }
+    
+    return incidents.filter(incident => incident.type === incidentType);
+  }, [incidents, activeFilter]);
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-brand-600 bg-brand-50 border-brand-200';
+      case 'medium': return 'text-orange-600 bg-orange-50 border-orange-200';
       case 'low': return 'text-green-600 bg-green-50 border-green-200';
       default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
@@ -531,24 +365,24 @@ const LeafletMapComponent: React.FC<LeafletMapProps> = ({
   };
 
   return (
-    <div className="w-full h-full min-h-[400px] rounded-lg overflow-hidden relative" key="map-animations-fixed-v4">
+    <div className="w-full h-full min-h-[400px] rounded-lg overflow-hidden relative" key="map-simple-colors-v6">
       <MapContainer
         center={center}
         zoom={11}
         style={{ height: '100%', width: '100%' }}
         className="rounded-lg"
-        key="leaflet-map-animations-v4"
+        key="leaflet-map-simple-colors-v6"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {incidents.map((incident) => (
+        {filteredIncidents.map((incident) => (
           <Marker
             key={incident.id}
             position={[incident.position.lat, incident.position.lng]}
-                                  icon={createCustomIcon(incident.type, incident.severity)}
+            icon={createCustomIcon(incident.type, incident.severity)}
             eventHandlers={{
               click: () => handleMarkerClick(incident),
             }}
@@ -584,30 +418,37 @@ const LeafletMapComponent: React.FC<LeafletMapProps> = ({
         ))}
       </MapContainer>
       
-      {/* Estatísticas em tempo real */}
-                <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-[1000] border-l-4 border-brand-500">
+      {/* Estatísticas em tempo real - Dinâmicas baseadas no filtro */}
+      <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-[1000] border-l-4 border-brand-500">
         <div className="text-xs font-semibold text-gray-800 mb-2 flex items-center space-x-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span>Dados em Tempo Real</span>
+          {activeFilter !== 'Todos' && (
+            <span className="text-brand-600 font-medium">({activeFilter})</span>
+          )}
         </div>
         <div className="space-y-1 text-xs">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span className="font-medium">4 ocorrências críticas</span>
-            <span className="text-red-600 font-bold">↑2 NOVOS</span>
+            <span className="font-medium">
+              {filteredIncidents.filter(i => i.severity === 'high').length} ocorrências críticas
+            </span>
+            {filteredIncidents.filter(i => i.severity === 'high').length > 0 && (
+              <span className="text-red-600 font-bold">ATENÇÃO</span>
+            )}
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-brand-500 rounded-full"></div>
-            <span>6 ocorrências médias</span>
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            <span>{filteredIncidents.filter(i => i.severity === 'medium').length} ocorrências médias</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>2 ocorrências baixas</span>
+            <span>{filteredIncidents.filter(i => i.severity === 'low').length} ocorrências baixas</span>
           </div>
           <div className="text-gray-600 pt-1 border-t border-gray-200">
             <div className="flex items-center space-x-1">
               <span>🔄</span>
-              <span>Atualizado há 30s</span>
+              <span>Total: {filteredIncidents.length} | Atualizado há 30s</span>
             </div>
           </div>
         </div>

@@ -57,7 +57,7 @@ const brasiliaIncidents: MapIncident[] = [
     position: { lat: -15.7801, lng: -47.9292 },
     title: 'Iluminação - W3 Norte',
     description: 'NASA VIIRS: 12 pontos com iluminação deficiente na W3 Norte',
-    severity: 'medium',
+    severity: 'low',
     region: 'Plano Piloto'
   },
   {
@@ -75,7 +75,7 @@ const brasiliaIncidents: MapIncident[] = [
     position: { lat: -15.8386, lng: -48.0494 },
     title: 'Área de Risco - Taguatinga Centro',
     description: 'Correlação IA: Crime + Baixa iluminação (Confiança: 87%)',
-    severity: 'medium',
+    severity: 'high',
     region: 'Taguatinga'
   },
   {
@@ -96,88 +96,69 @@ const brasiliaIncidents: MapIncident[] = [
     severity: 'high',
     region: 'Brasília'
   },
+  {
+    id: '6',
+    type: 'flood',
+    position: { lat: -15.7600, lng: -47.9100 },
+    title: 'Manutenção Preventiva - Asa Norte',
+    description: 'Sistema de drenagem funcionando normalmente',
+    severity: 'low',
+    region: 'Plano Piloto'
+  },
 ];
 
+// Função para criar ícones customizados - VERSÃO SIMPLIFICADA
 const createCustomIcon = (type: string, severity: string) => {
-  const getEmoji = (type: string) => {
-    switch (type) {
-      case 'trash': return '🗑️';
-      case 'lighting': return '💡';
-      case 'fire': return '🔥';
-      case 'flood': return '💧';
-      case 'crime': return '🛡️';
-      default: return '📍';
-    }
+  // Determinar cor baseada na severidade
+  let bgColor = '#f59e0b'; // laranja padrão
+  
+  if (severity === 'high') {
+    bgColor = '#dc2626'; // vermelho
+  } else if (severity === 'low') {
+    bgColor = '#059669'; // verde
+  }
+
+  const icons = {
+    trash: '🗑️',
+    lighting: '💡',
+    fire: '🔥',
+    flood: '💧',
+    crime: '🛡️'
   };
 
-  const emoji = getEmoji(type);
-  
+  const emoji = icons[type as keyof typeof icons] || '📍';
+
   return L.divIcon({
+    className: 'custom-div-icon',
     html: `
-      <style>
-        .marker-container {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .marker-main {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          position: relative;
-          z-index: 2;
-          background: white;
-          border: 3px solid ${severity === 'high' ? '#dc2626' : severity === 'medium' ? '#4220F3' : '#059669'};
-          box-shadow: 0 3px 12px rgba(0,0,0,0.4);
-          ${severity === 'high' ? 'animation: bounce-high 2s infinite;' : 
-            severity === 'medium' ? 'animation: mediumPulse-medium 3s infinite;' : 
-            'animation: lowGlow-low 4s infinite;'}
-        }
-        @keyframes bounce-high {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0) scale(1); }
-          40% { transform: translateY(-8px) scale(1.1); }
-          60% { transform: translateY(-3px) scale(1.02); }
-        }
-        @keyframes mediumPulse-medium {
-          0%, 100% { 
-            transform: scale(1); 
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4), 0 0 0 0 rgba(66, 32, 243, 0.7); 
-          }
-          50% { 
-            transform: scale(1.05); 
-            box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 0 0 10px rgba(66, 32, 243, 0); 
-          }
-        }
-        @keyframes lowGlow-low {
-          0%, 100% { 
-            box-shadow: 0 3px 12px rgba(0,0,0,0.4); 
-          }
-          50% { 
-            box-shadow: 0 0 20px rgba(5, 150, 105, 0.7), 0 3px 12px rgba(0,0,0,0.4); 
-          }
-        }
-      </style>
-      <div class="marker-container">
-        <div class="marker-main">
-          ${emoji}
-        </div>
+      <div style="
+        background-color: ${bgColor} !important;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 3px solid white !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.4);
+        position: relative;
+        cursor: pointer;
+        color: white;
+      ">
+        ${emoji}
       </div>
     `,
-    iconSize: [40, 50],
-    iconAnchor: [20, 50],
-    popupAnchor: [0, -50],
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+    popupAnchor: [0, -19],
   });
 };
 
 const getSeverityColor = (severity: string) => {
   switch (severity) {
     case 'high': return 'text-red-600 bg-red-50 border-red-200';
-    case 'medium': return 'text-brand-600 bg-brand-50 border-brand-200';
+    case 'medium': return 'text-orange-600 bg-orange-50 border-orange-200';
     case 'low': return 'text-green-600 bg-green-50 border-green-200';
     default: return 'text-gray-600 bg-gray-50 border-gray-200';
   }
@@ -730,7 +711,7 @@ const IntelligentMap: React.FC = () => {
                   zoom={11}
                   style={{ height: '100%', width: '100%' }}
                   className="rounded-lg"
-                  key={`map-container-${activeView}`}
+                  key={`map-container-${activeView}-color-fix-v1`}
                 >
                   {/* Camada base principal */}
                   <TileLayer

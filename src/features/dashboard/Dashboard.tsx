@@ -25,6 +25,7 @@ import type { KPIData } from '../../schemas';
 export function Dashboard() {
   const { isLoading, withLoading } = useLoading();
   const [kpiData, setKpiData] = useState<KPIData | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>('Todos');
 
   useEffect(() => {
     loadDashboardData();
@@ -114,16 +115,37 @@ export function Dashboard() {
                     <span className="whitespace-nowrap">Desordens Urbanas</span>
                   </CardTitle>
                   <div className="flex space-x-2">
-                    <FilterButton active label="Lixo" />
-                    <FilterButton label="Iluminação" />
-                    <FilterButton label="Incêndios" />
-                    <FilterButton label="Crimes" />
+                    <FilterButton 
+                      active={activeFilter === 'Todos'} 
+                      label="Todos" 
+                      onClick={() => setActiveFilter('Todos')}
+                    />
+                    <FilterButton 
+                      active={activeFilter === 'Lixo'} 
+                      label="Lixo" 
+                      onClick={() => setActiveFilter('Lixo')}
+                    />
+                    <FilterButton 
+                      active={activeFilter === 'Iluminação'} 
+                      label="Iluminação" 
+                      onClick={() => setActiveFilter('Iluminação')}
+                    />
+                    <FilterButton 
+                      active={activeFilter === 'Incêndios'} 
+                      label="Incêndios" 
+                      onClick={() => setActiveFilter('Incêndios')}
+                    />
+                    <FilterButton 
+                      active={activeFilter === 'Crimes'} 
+                      label="Crimes" 
+                      onClick={() => setActiveFilter('Crimes')}
+                    />
                   </div>
                 </div>
               </CardHeader>
               
               <CardContent className="p-0 flex-1 min-h-0">
-                <LeafletMapComponent />
+                <LeafletMapComponent activeFilter={activeFilter} />
               </CardContent>
             </Card>
           </div>
@@ -285,11 +307,13 @@ function MetricCard({ title, value, trend, icon: Icon, color, subtitle, isPercen
 interface FilterButtonProps {
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }
 
-function FilterButton({ label, active = false }: FilterButtonProps) {
+function FilterButton({ label, active = false, onClick }: FilterButtonProps) {
   return (
     <button
+      onClick={onClick}
       className={cn(
         'px-3 py-1 text-xs font-medium rounded-full border transition-colors',
         active
