@@ -63,25 +63,32 @@ export function useNetlifyWebhook() {
             const newTask = convertWebhookToTask(webhookData);
             
             // Verificar se a task já existe no cache (dupla proteção)
+            let taskWasAdded = false;
+            
             queryClient.setQueryData(['tasks'], (oldTasks: any[] = []) => {
               const existingTask = oldTasks.find(task => task.id === newTask.id || task.incident_id === webhookId);
               if (existingTask) {
                 console.log('🔄 [DEDUPLICAÇÃO] Task já existe no cache, ignorando:', webhookId);
+                taskWasAdded = false;
                 return oldTasks;
               }
               
               console.log('✅ Task criada via webhook Netlify:', newTask.title);
               console.log('🎯 [FRONTEND] Nova task adicionada ao cache:', JSON.stringify(newTask, null, 2));
               
+              taskWasAdded = true;
               return [newTask, ...oldTasks];
             });
             
-            // Notificação visual
-            if ('Notification' in window && Notification.permission === 'granted') {
+            // Notificação visual APENAS se a task foi realmente adicionada
+            if (taskWasAdded && 'Notification' in window && Notification.permission === 'granted') {
+              console.log('🔔 [NOTIFICAÇÃO] Enviando notificação para task nova:', webhookId);
               new Notification('Nova Ocorrência!', {
                 body: `${newTask.title} em ${newTask.location}`,
                 icon: '/favicon.ico'
               });
+            } else if (!taskWasAdded) {
+              console.log('🔕 [NOTIFICAÇÃO] Notificação bloqueada - task duplicada:', webhookId);
             }
           });
           
@@ -104,23 +111,45 @@ export function useNetlifyWebhook() {
           const webhooks: WebhookIncident[] = JSON.parse(pendingWebhooks);
           
           webhooks.forEach((webhookData) => {
+            const webhookId = webhookData.incident_id;
+            
+            // Verificar se já foi processado (evitar duplicatas no localStorage também)
+            if (processedIds.has(webhookId)) {
+              console.log('🔄 [DEDUPLICAÇÃO-LOCAL] Webhook localStorage já processado, ignorando:', webhookId);
+              return;
+            }
+            
+            // Marcar como processado
+            setProcessedIds(prev => new Set(prev).add(webhookId));
+            
             // Converter webhook em task
             const newTask = convertWebhookToTask(webhookData);
             
-            // Adicionar ao cache do TanStack Query
-            queryClient.setQueryData(['tasks'], (oldTasks: any[] = []) => [
-              newTask,
-              ...oldTasks
-            ]);
+            let taskWasAdded = false;
             
-            console.log('✅ Task criada via webhook localStorage:', newTask.title);
+            // Adicionar ao cache do TanStack Query com verificação de duplicata
+            queryClient.setQueryData(['tasks'], (oldTasks: any[] = []) => {
+              const existingTask = oldTasks.find(task => task.id === newTask.id || task.incident_id === webhookId);
+              if (existingTask) {
+                console.log('🔄 [DEDUPLICAÇÃO-LOCAL] Task já existe no cache, ignorando:', webhookId);
+                taskWasAdded = false;
+                return oldTasks;
+              }
+              
+              console.log('✅ Task criada via webhook localStorage:', newTask.title);
+              taskWasAdded = true;
+              return [newTask, ...oldTasks];
+            });
             
-            // Notificação visual
-            if ('Notification' in window && Notification.permission === 'granted') {
+            // Notificação visual APENAS se a task foi realmente adicionada
+            if (taskWasAdded && 'Notification' in window && Notification.permission === 'granted') {
+              console.log('🔔 [NOTIFICAÇÃO-LOCAL] Enviando notificação para task nova:', webhookId);
               new Notification('Nova Ocorrência!', {
                 body: `${newTask.title} em ${newTask.location}`,
                 icon: '/favicon.ico'
               });
+            } else if (!taskWasAdded) {
+              console.log('🔕 [NOTIFICAÇÃO-LOCAL] Notificação bloqueada - task duplicada:', webhookId);
             }
           });
           
