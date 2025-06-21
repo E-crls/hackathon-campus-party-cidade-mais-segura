@@ -76,9 +76,9 @@ export interface UpdateTaskData {
 }
 
 
-const API_BASE_URL = import.meta.env.DEV 
-  ? 'http://localhost:3001/api' 
-  : `${window.location.origin}/api`; // Usa o domínio atual em produção
+const API_BASE_URL = import.meta.env.DEV
+  ? 'http://localhost:3001/api'
+  : `${window.location.origin}/api`;
 
 
 
@@ -134,7 +134,6 @@ export function convertWebhookToTask(webhookData: WebhookIncident): Task {
 }
 
 class TasksAPI {
-  // Buscar todas as tasks
   static async getTasks(): Promise<Task[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks`);
@@ -142,12 +141,10 @@ class TasksAPI {
       return response.json();
     } catch (error) {
       console.warn('API não disponível, usando dados mock');
-      // Fallback para dados mock se a API não estiver disponível
       return mockTasks;
     }
   }
 
-  // Criar nova task
   static async createTask(data: CreateTaskData): Promise<Task> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks`, {
@@ -159,7 +156,6 @@ class TasksAPI {
       return response.json();
     } catch (error) {
       console.warn('API não disponível, simulando criação');
-      // Fallback: simular criação
       const newTask: Task = {
         id: Date.now().toString(),
         ...data,
@@ -172,7 +168,6 @@ class TasksAPI {
     }
   }
 
-  // Atualizar task
   static async updateTask(data: UpdateTaskData): Promise<Task> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/${data.id}`, {
@@ -184,14 +179,12 @@ class TasksAPI {
       return response.json();
     } catch (error) {
       console.warn('API não disponível, simulando atualização');
-      // Fallback: encontrar na lista mock e atualizar
       const mockTask = mockTasks.find(t => t.id === data.id);
       if (!mockTask) throw new Error('Task não encontrada');
       return { ...mockTask, ...data };
     }
   }
 
-  // Deletar task
   static async deleteTask(id: string): Promise<void> {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
@@ -200,12 +193,10 @@ class TasksAPI {
       if (!response.ok) throw new Error('Erro ao deletar task');
     } catch (error) {
       console.warn('API não disponível, simulando exclusão');
-      // Em um cenário real, você removeria da lista
     }
   }
 }
 
-// Dados mock para fallback
 const mockTasks: Task[] = [
   {
     id: '1',
@@ -235,14 +226,11 @@ const mockTasks: Task[] = [
     createdAt: '2024-12-19',
     aiConfidence: 87
   },
-  // ... outros dados mock
 ];
 
-// Hook principal para gerenciar tasks
 export function useTasks() {
   const queryClient = useQueryClient();
 
-  // Query para buscar todas as tasks
   const {
     data: tasks = [],
     isLoading,
@@ -251,19 +239,17 @@ export function useTasks() {
   } = useQuery({
     queryKey: ['tasks'],
     queryFn: TasksAPI.getTasks,
-    staleTime: 1000 * 60 * 2, // 2 minutos
+    staleTime: 1000 * 60 * 2,
   });
 
-  // Mutation para criar task
   const createTaskMutation = useMutation({
     mutationFn: TasksAPI.createTask,
     onSuccess: (newTask) => {
-      // Atualiza o cache local
       queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) => [
         ...oldTasks,
         newTask
       ]);
-      
+
 
     },
     onError: (error) => {
@@ -271,17 +257,15 @@ export function useTasks() {
     }
   });
 
-  // Mutation para atualizar task
   const updateTaskMutation = useMutation({
     mutationFn: TasksAPI.updateTask,
     onSuccess: (updatedTask) => {
-      // Atualiza o cache local
       queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) =>
-        oldTasks.map(task => 
+        oldTasks.map(task =>
           task.id === updatedTask.id ? updatedTask : task
         )
       );
-      
+
 
     },
     onError: (error) => {
@@ -289,15 +273,13 @@ export function useTasks() {
     }
   });
 
-  // Mutation para deletar task
   const deleteTaskMutation = useMutation({
     mutationFn: TasksAPI.deleteTask,
     onSuccess: (_, deletedId) => {
-      // Remove do cache local
       queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) =>
         oldTasks.filter(task => task.id !== deletedId)
       );
-      
+
 
     },
     onError: (error) => {
@@ -306,75 +288,63 @@ export function useTasks() {
   });
 
   return {
-    // Dados
     tasks,
     isLoading,
     error,
-    
-    // Ações
+
     refetch,
     createTask: createTaskMutation.mutate,
     updateTask: updateTaskMutation.mutate,
     deleteTask: deleteTaskMutation.mutate,
-    
-    // Estados das mutations
+
     isCreating: createTaskMutation.isPending,
     isUpdating: updateTaskMutation.isPending,
     isDeleting: deleteTaskMutation.isPending,
   };
 }
 
-// Hook para WebSocket/Webhook listener
 export function useTaskWebhooks() {
   const queryClient = useQueryClient();
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // Configurar WebSocket para receber atualizações em tempo real
     const connectWebSocket = () => {
       try {
-        // Só conecta WebSocket em desenvolvimento (localhost)
         if (!import.meta.env.DEV) {
           return;
         }
-        
-        // Conectar ao WebSocket do servidor local
+
         const ws = new WebSocket('ws://localhost:3001');
         wsRef.current = ws;
 
         ws.onopen = () => {
-  
+
         };
 
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            
-            // Verificar se é um incident do webhook (nova estrutura)
+
             if (data.incident_id && data.collected_data) {
-              // Converter dados do webhook em task
               const newTask = convertWebhookToTask(data as WebhookIncident);
-              
-              // Adicionar nova task ao cache
+
               queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) => [
                 newTask,
                 ...oldTasks
               ]);
-              
 
-              
-              // Notificação visual (você pode implementar toast aqui)
+
+
               if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification('Nova Ocorrência Detectada', {
                   body: `${newTask.title} em ${newTask.location}`,
                   icon: '/favicon.ico'
                 });
               }
-              
+
               return;
             }
-            
-            // Processar eventos tradicionais do sistema
+
             switch (data.type) {
               case 'TASK_CREATED':
                 queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) => [
@@ -383,23 +353,23 @@ export function useTaskWebhooks() {
                 ]);
 
                 break;
-                
+
               case 'TASK_UPDATED':
                 queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) =>
-                  oldTasks.map(task => 
+                  oldTasks.map(task =>
                     task.id === data.task.id ? data.task : task
                   )
                 );
 
                 break;
-                
+
               case 'TASK_DELETED':
                 queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) =>
                   oldTasks.filter(task => task.id !== data.taskId)
                 );
 
                 break;
-                
+
               default:
 
             }
@@ -409,16 +379,14 @@ export function useTaskWebhooks() {
         };
 
         ws.onerror = (error) => {
-          console.error('❌ Erro no WebSocket:', error);
+          console.error('Erro no WebSocket:', error);
         };
 
         ws.onclose = () => {
-          // Reconectar após 5 segundos
           setTimeout(connectWebSocket, 5000);
         };
 
       } catch (error) {
-        // Fallback: polling a cada 30 segundos
         const interval = setInterval(() => {
           queryClient.invalidateQueries({ queryKey: ['tasks'] });
         }, 30000);
@@ -429,7 +397,6 @@ export function useTaskWebhooks() {
 
     connectWebSocket();
 
-    // Cleanup
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
@@ -437,12 +404,11 @@ export function useTaskWebhooks() {
     };
   }, [queryClient]);
 
-  // Função para simular recebimento de webhook (para testes)
   const simulateWebhook = (type: 'TASK_CREATED' | 'TASK_UPDATED' | 'TASK_DELETED', data: any) => {
     const event = new MessageEvent('message', {
       data: JSON.stringify({ type, ...data })
     });
-    
+
     if (wsRef.current) {
       wsRef.current.dispatchEvent(event);
     }
@@ -450,6 +416,6 @@ export function useTaskWebhooks() {
 
   return {
     isConnected: wsRef.current?.readyState === WebSocket.OPEN,
-    simulateWebhook, // Para testes
+    simulateWebhook,
   };
 } 

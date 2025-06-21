@@ -1,4 +1,4 @@
-// 🎯 Core Types
+
 export interface KPIData {
   critical: { value: number; trend: number };
   monitoring: { value: number; trend: number };
@@ -45,7 +45,6 @@ export interface User {
   avatar?: string;
 }
 
-// 🎨 UI Types
 export interface Theme {
   mode: 'light' | 'dark';
 }
@@ -70,7 +69,6 @@ export interface ChartData {
   }>;
 }
 
-// 🔄 API Types
 export interface APIResponse<T> {
   data: T;
   success: boolean;
@@ -86,8 +84,6 @@ export interface PaginatedResponse<T> extends APIResponse<T[]> {
     totalPages: number;
   };
 }
-
-// 📊 Filter Types
 export interface MapFilter {
   type: 'all' | 'critical' | 'lighting' | 'waste' | 'construction';
   region?: string;

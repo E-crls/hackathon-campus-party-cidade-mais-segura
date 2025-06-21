@@ -1,25 +1,25 @@
-# 🌟 Orbis - Plataforma Inteligente de Segurança Urbana
+# Orbis - Plataforma Inteligente de Segurança Urbana
 
-## 🎯 Sobre o Projeto
+## Sobre o Projeto
 
-Orbis é uma plataforma inteligente e integrada que permite mapear, classificar, acompanhar e tratar desordens urbanas e rurais com impacto potencial na segurança pública, utilizando inteligência artificial (IA), georreferenciamento e participação cidadã.
+Orbis é uma plataforma inteligente e integrada que permite mapear, classificar, acopanhar e tratar desordens urbanas e rurais com impacto potencial na segurança pública, utilizando inteligência artificial (IA), georreferenciamento e participação cidadã.
 
-## 🚀 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
-- ⚛️ **React 19** com TypeScript
-- 🎨 **TailwindCSS** para estilização
-- 📦 **TanStack Query** para cache e fetch de dados
-- ✅ **Zod** para validação de esquemas
-- 🧰 **React Hook Form** para formulários
-- 🎭 **Lucide React** para ícones
-- 📊 **Chart.js** para gráficos (futuro)
-- 🗺️ **Leaflet** para mapas (futuro)
+- **React 19** com TypeScript
+ **TailwindCSS** para estilização
+ **TanStack Query** par cache e fetch de dados
+ **Zod** para validação de esquemas
+ **React Hook Form** para formulários
+**Lucide React** para ícones
+**Chart.js** para gráficos (futuro)
+ **Leaflet** para mapas (futuro)
 
-## 🏗️ Arquitetura
+## Arquitetura
 
-O projeto segue os **princípios SOLID** adaptados para React:
+O projeto sege os **princípios SOLID** adaptados para React:
 
-### 📁 Estrutura de Pastas
+### Estrutura de Pastas
 
 ```
 src/
@@ -36,31 +36,31 @@ src/
 └── types/               # Tipos TypeScript
 ```
 
-### 🔺 Princípios SOLID
+### Princípios SOLID
 
-1. **SRP (Single Responsibility)**: Cada componente tem uma responsabilidade única
-2. **OCP (Open/Closed)**: Componentes extensíveis via props e composição
-3. **LSP (Liskov Substitution)**: Interfaces bem definidas e previsíveis
-4. **ISP (Interface Segregation)**: Props específicas, sem dependências desnecessárias
-5. **DIP (Dependency Inversion)**: Injeção de dependências via hooks e context
+1. SRP (Single Responsibility): Cada componente tem uma responsabilidade única
+2. OCP (Open/Closed): Componentes extensíveis via props e composição
+3. LSP (Liskov Substitution): Interfaces bem definidas e previsíveis
+4. ISP (Interface Segregation): Props específicas, sem dependências desnecessárias
+5. DIP (Dependency Inversion): Injeção de dependências via hooks e context
 
-## ✨ Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
-### 📊 Dashboard Executivo
+### Dashboard Executivo
 
 - **KPI Cards** com dados em tempo real
 - **Animações** e feedback visual
 - **Responsividade** completa
 - **Tema dark/light**
 
-### 🤖 Assistente IA
+### Assistente IA
 
 - **Chat interativo** com IA
 - **Sugestões automáticas** contextuais
 - **Validação de entrada** com Zod
 - **Histórico de conversas**
 
-### 🎨 Sistema de Design
+### Sistema de Design
 
 - **Componentes reutilizáveis** (Button, Card, Input)
 - **Tema consistente** com variáveis CSS
@@ -83,8 +83,7 @@ npm run lint
 npm run preview
 ```
 
-## 🔧 Configuração do Ambiente
-
+## Configuração do Ambiente
 ### Pré-requisitos
 
 - Node.js 18+
@@ -106,15 +105,15 @@ npm install --legacy-peer-deps
 npm run dev
 ```
 
-## 📱 Design Responsivo
+## Design Responsivo
 
 A aplicação é totalmente responsiva, seguindo os breakpoints:
 
-- 📱 **Mobile**: < 768px
-- 📃 **Tablet**: 768px - 1024px
-- 🖥️ **Desktop**: > 1024px
+- Mobile: < 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
 
-## 🎨 Tema e Estilização
+## Tema e Estilização
 
 ### Dark Mode por Padrão
 
@@ -127,7 +126,7 @@ Conforme especificação, a aplicação usa **dark mode** como padrão, com opç
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
   --primary: 217 91% 60%;
-  /* ... outras variáveis */
+  /* ... */
 }
 ```
 
@@ -147,28 +146,28 @@ export const chatInputSchema = z.object({
 
 Projeto configurado com TypeScript em modo strict para máxima type safety.
 
-## 🚀 Próximos Passos
+## Próximos Passos
 
-### 🗺️ Mapa Inteligente
+### Mapa Inteligente
 
 - Integração com Leaflet
 - Visualização georreferenciada
 - Filtros dinâmicos
 - Heat maps
 
-### 📊 Dashboards Avançados
+### Dashboards Avançados
 
 - Gráficos interativos com Chart.js
 - Relatórios exportáveis
 - Análises preditivas
 
-### 🤖 IA Avançada
+### IA Avançada
 
 - Integração com LLM real
 - Análise de imagens de satélite
 - Predições mais precisas
 
-## 📋 Checklist de Qualidade
+## Checklist de Qualidade
 
 - ✅ Componentes com responsabilidade única
 - ✅ Tipagem TypeScript clara e correta
@@ -180,7 +179,7 @@ Projeto configurado com TypeScript em modo strict para máxima type safety.
 - ✅ Componentes acessíveis
 - ✅ Sem hardcode de dados
 
-## 👥 Público-Alvo
+## Público-Alvo
 
 **Gestores do Ministério da Segurança Pública** que precisam de:
 
@@ -191,4 +190,4 @@ Projeto configurado com TypeScript em modo strict para máxima type safety.
 
 ---
 
-> 🧠 **Dica**: Este projeto segue as melhores práticas de desenvolvimento React moderno, priorizando manutenibilidade, escalabilidade e experiência do usuário.
+> **Aviso**: Este projeto segue as melhores práticas de desenvolvimento React moderno, priorizando manutenibilidade, escalabilidade e experiência do usuário.

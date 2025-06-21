@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { DragEvent } from 'react';
-import { 
-  Plus, 
-  Search, 
+import {
+  Plus,
+  Search,
   MoreHorizontal,
   Calendar,
   MapPin,
@@ -39,21 +39,21 @@ const columns = [
 
 export function KanbanBoard() {
   // Hooks do TanStack Query
-  const { 
-    tasks, 
-    isLoading, 
-    error, 
-    createTask, 
+  const {
+    tasks,
+    isLoading,
+    error,
+    createTask,
     updateTask,
     isCreating,
     isUpdating,
     refetch
   } = useTasks();
-  
+
   // Hook para escutar webhooks - escolhe o apropriado para o ambiente
   const isNetlify = useIsNetlify();
   const netlifyWebhook = useNetlifyWebhook();
-  
+
   // Usar webhook local apenas em desenvolvimento
   if (!isNetlify) {
     useSimpleWebhook();
@@ -80,11 +80,11 @@ export function KanbanBoard() {
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.location.toLowerCase().includes(searchTerm.toLowerCase());
+      task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      task.location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || task.type === filterType;
     const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
-    
+
     return matchesSearch && matchesType && matchesPriority;
   });
 
@@ -133,7 +133,7 @@ export function KanbanBoard() {
         dueDate: newTask.dueDate || new Date().toISOString().split('T')[0],
         source: newTask.source || 'satellite',
       };
-      
+
       createTask(taskData);
       setNewTask({
         title: '',
@@ -197,7 +197,7 @@ export function KanbanBoard() {
     if (dateString.includes('/')) {
       return dateString;
     }
-    
+
     // Converte de YYYY-MM-DD para DD/MM/YYYY
     try {
       const [year, month, day] = dateString.split('-');
@@ -230,7 +230,7 @@ export function KanbanBoard() {
       },
       timestamp: new Date().toISOString()
     };
-    
+
     // Salvar no localStorage para simular webhook
     const existing = JSON.parse(localStorage.getItem('pending_webhooks') || '[]');
     existing.push(sampleWebhookData);
@@ -248,7 +248,7 @@ export function KanbanBoard() {
               <p className="text-sm text-gray-600">Carregando dados...</p>
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-hidden">
             <div className="grid grid-cols-3 gap-4 h-full">
               {columns.map((column) => (
@@ -302,7 +302,7 @@ export function KanbanBoard() {
   return (
     <div className="h-full bg-gray-50 p-4 overflow-hidden flex flex-col">
       <div className="w-full flex flex-col h-full">
-        
+
         {/* Header */}
         <div className="mb-4">
           {/* Título e Info */}
@@ -321,8 +321,8 @@ export function KanbanBoard() {
                 Tarefas identificadas automaticamente via satélites • {tasks.length} tarefas
               </p>
             </div>
-            
-            <div className="hidden lg:flex items-center space-x-4">           
+
+            <div className="hidden lg:flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-xs text-gray-500">
                 <Calendar className="h-3 w-3" />
                 <span>20 de dezembro de 2024</span>
@@ -343,7 +343,7 @@ export function KanbanBoard() {
                 />
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 sm:gap-3">
               <select
                 value={filterType}
@@ -370,8 +370,8 @@ export function KanbanBoard() {
                 <option value="Baixa">Baixa</option>
               </select>
 
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className="bg-brand-500 hover:bg-brand-600 text-white"
                 onClick={() => setShowNewTaskModal(true)}
               >
@@ -391,10 +391,10 @@ export function KanbanBoard() {
                 {isNetlify ? 'Netlify' : 'Local'}
               </span>
             </div>
-            
+
             {/* Botão de configuração do webhook */}
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="outline"
               onClick={() => setShowWebhookInfo(true)}
               className="text-xs"
@@ -402,10 +402,10 @@ export function KanbanBoard() {
               <Settings className="h-3 w-3 mr-1" />
               Webhook
             </Button>
-            
+
             {/* Botão para simular webhook */}
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               variant="outline"
               onClick={isNetlify ? netlifyWebhook.testWebhook : handleSimulateWebhook}
               className="text-xs"
@@ -419,8 +419,8 @@ export function KanbanBoard() {
         <div className="flex-1 overflow-hidden">
           <div className="grid grid-cols-3 gap-4 h-full">
             {columns.map((column) => (
-              <div 
-                key={column.id} 
+              <div
+                key={column.id}
                 className="flex flex-col"
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, column.id)}
@@ -437,7 +437,7 @@ export function KanbanBoard() {
                       </CardTitle>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="flex-1 overflow-y-auto space-y-2 px-3 pb-3">
                     {getTasksByStatus(column.id).map((task) => (
                       <TaskCard
@@ -454,7 +454,7 @@ export function KanbanBoard() {
                         formatDateBR={formatDateBR}
                       />
                     ))}
-                    
+
                     {getTasksByStatus(column.id).length === 0 && (
                       <div className="text-center py-6 text-gray-400">
                         <div className="text-sm">Nenhuma tarefa</div>
@@ -469,7 +469,7 @@ export function KanbanBoard() {
 
         {/* Modal para Nova Tarefa */}
         {showNewTaskModal && (
-          <NewTaskModal 
+          <NewTaskModal
             newTask={newTask}
             setNewTask={setNewTask}
             onSave={handleCreateTask}
@@ -479,15 +479,15 @@ export function KanbanBoard() {
 
         {/* Modal de Detalhes da Tarefa */}
         {showTaskDetails && (
-                      <TaskDetailsModal 
-              task={tasks.find(t => t.id === showTaskDetails)}
-              onClose={() => setShowTaskDetails(null)}
-              getTypeIcon={getTypeIcon}
-              getTypeColor={getTypeColor}
-              getPriorityColor={getPriorityColor}
-              getTypeTranslation={getTypeTranslation}
-              formatDateBR={formatDateBR}
-            />
+          <TaskDetailsModal
+            task={tasks.find(t => t.id === showTaskDetails)}
+            onClose={() => setShowTaskDetails(null)}
+            getTypeIcon={getTypeIcon}
+            getTypeColor={getTypeColor}
+            getPriorityColor={getPriorityColor}
+            getTypeTranslation={getTypeTranslation}
+            formatDateBR={formatDateBR}
+          />
         )}
 
         {/* Modal de Informações do Webhook */}
@@ -655,7 +655,7 @@ function NewTaskModal({ newTask, setNewTask, onSave, onClose }: NewTaskModalProp
             <Button variant="ghost" onClick={onClose}>
               Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={onSave}
               className="bg-brand-500 hover:bg-brand-600 text-white"
               disabled={!newTask.title || !newTask.description}
@@ -670,7 +670,6 @@ function NewTaskModal({ newTask, setNewTask, onSave, onClose }: NewTaskModalProp
   );
 }
 
-// Modal de Detalhes da Tarefa
 interface TaskDetailsModalProps {
   task?: Task;
   onClose: () => void;
@@ -781,7 +780,7 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
                   </div>
                 </div>
 
-                
+
 
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">
@@ -814,13 +813,13 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
                 <div className={cn(
                   'w-3 h-3 rounded-full',
                   task.status === 'todo' ? 'bg-brand-500' :
-                  task.status === 'in-progress' ? 'bg-yellow-500' :
-                  'bg-green-500'
+                    task.status === 'in-progress' ? 'bg-yellow-500' :
+                      'bg-green-500'
                 )}></div>
                 <span className="font-medium text-gray-900">
                   {task.status === 'todo' ? 'A Fazer' :
-                   task.status === 'in-progress' ? 'Em Andamento' :
-                   'Concluído'}
+                    task.status === 'in-progress' ? 'Em Andamento' :
+                      'Concluído'}
                 </span>
               </div>
             </div>
@@ -835,7 +834,7 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
       </div>
     </div>
   );
-} 
+}
 
 interface TaskCardProps {
   task: Task;
@@ -861,7 +860,7 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
   ].filter(option => option.id !== task.status);
 
   return (
-    <div 
+    <div
       className={cn(
         "bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all cursor-grab active:cursor-grabbing relative",
         isDragging && "opacity-50 scale-95"
@@ -881,8 +880,8 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
           {/* Badge discreto de fonte */}
           <div className={cn(
             'px-2 py-0.5 rounded-full text-xs font-medium flex items-center space-x-1',
-            task.source === 'population' 
-              ? 'bg-green-50 text-green-700 border border-green-200' 
+            task.source === 'population'
+              ? 'bg-green-50 text-green-700 border border-green-200'
               : 'bg-blue-50 text-blue-700 border border-blue-200'
           )}>
             {task.source === 'population' ? (
@@ -905,7 +904,7 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
           >
             <MoreHorizontal className="h-3 w-3" />
           </button>
-          
+
           {showMoveOptions && (
             <div className="absolute right-0 top-5 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-28">
               <div className="py-1">
@@ -937,13 +936,13 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
           <MapPin className="h-3 w-3 mr-1" />
           <span className="truncate">{task.location}</span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center text-xs text-gray-500">
             <Clock className="h-3 w-3 mr-1" />
             <span>{formatDateBR(task.dueDate)}</span>
           </div>
-          
+
           <div className="flex items-center text-xs">
             <AlertTriangle className="h-3 w-3 mr-1 text-brand-500" />
             <span className="text-brand-600 font-medium">{task.aiConfidence}%</span>

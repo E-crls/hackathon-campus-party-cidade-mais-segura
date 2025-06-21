@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// 📊 KPI Schema
 export const kpiSchema = z.object({
   critical: z.object({
     value: z.number().int().positive(),
@@ -20,7 +19,6 @@ export const kpiSchema = z.object({
   }),
 });
 
-// 🎯 Occurrence Schema
 export const occurrenceSchema = z.object({
   id: z.string().uuid(),
   type: z.enum(['lighting', 'waste', 'construction', 'degraded']),
@@ -35,7 +33,6 @@ export const occurrenceSchema = z.object({
   updatedAt: z.date(),
 });
 
-// 🗺️ Region Schema
 export const regionSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1),
@@ -49,7 +46,6 @@ export const regionSchema = z.object({
   })).optional(),
 });
 
-// 💬 Chat Message Schema
 export const chatMessageSchema = z.object({
   id: z.string().uuid(),
   content: z.string().min(1),
@@ -58,7 +54,6 @@ export const chatMessageSchema = z.object({
   suggestions: z.array(z.string()).optional(),
 });
 
-// 👤 User Schema
 export const userSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -66,12 +61,10 @@ export const userSchema = z.object({
   avatar: z.string().url().optional(),
 });
 
-// 📝 Chat Input Schema
 export const chatInputSchema = z.object({
   message: z.string().min(1, 'Mensagem não pode estar vazia').max(1000, 'Mensagem muito longa'),
 });
 
-// 🔍 Map Filter Schema
 export const mapFilterSchema = z.object({
   type: z.enum(['all', 'critical', 'lighting', 'waste', 'construction']),
   region: z.string().optional(),
@@ -81,12 +74,10 @@ export const mapFilterSchema = z.object({
   }).optional(),
 });
 
-// 🎨 Theme Schema
 export const themeSchema = z.object({
   mode: z.enum(['light', 'dark']),
 });
 
-// Type exports
 export type KPIData = z.infer<typeof kpiSchema>;
 export type Occurrence = z.infer<typeof occurrenceSchema>;
 export type Region = z.infer<typeof regionSchema>;

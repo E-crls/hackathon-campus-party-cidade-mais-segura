@@ -41,7 +41,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Paleta de cores do branding Orbis (#4220F3)
         brand: {
           50: '#f5f3ff',
           100: '#ede8ff',
