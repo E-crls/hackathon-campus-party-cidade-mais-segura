@@ -140,16 +140,17 @@ export function Navigation({ currentSection, onSectionChange, onCollapseChange }
                       </div>
                       <div>
                         <h3 className="text-base font-semibold text-white leading-tight">
-                          Insights via<br />Satélites + IA
+                          Abra ocorrências<br />pelo WhatsApp
                         </h3>
-                        <p className="text-xs text-white/70 mt-1">Análise de dados open-source em tempo real</p>
+                        <p className="text-xs text-white/70 mt-1">Orbis IA para relato de Desordens urbanas</p>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="bg-white/90 hover:bg-white text-brand-700 px-6 py-2.5 h-auto rounded-full transition-all duration-200 w-full shadow-md hover:shadow-lg"
+                        onClick={() => window.open('https://wa.me/5562999593836?text=Ol%C3%A1%20Orbis!%20O%20que%20voc%C3%AA%20faz%3F', '_blank')}
                       >
-                        <span className="text-sm font-medium">Ver insights</span>
+                        <span className="text-sm font-medium">Falar com Orbis</span>
                         <ArrowRight className="h-4 w-4 ml-2 text-brand-600" />
                       </Button>
                     </div>

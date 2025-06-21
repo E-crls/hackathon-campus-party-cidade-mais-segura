@@ -33,6 +33,7 @@ import { WebhookInfo } from '../../components/ui/WebhookInfo';
 import { cn } from '../../utils/cn';
 import { useTasks, type Task, type CreateTaskData } from '../../hooks/useTasks';
 import { useSimpleWebhook } from '../../hooks/useSimpleWebhook';
+import { useNetlifyWebhook, useIsNetlify } from '../../hooks/useNetlifyWebhook';
 
 const columns = [
   { id: 'todo', title: 'A Fazer', color: 'bg-brand-100' },
@@ -53,8 +54,14 @@ export function KanbanBoard() {
     refetch
   } = useTasks();
   
-  // Hook para escutar webhooks simples
-  useSimpleWebhook();
+  // Hook para escutar webhooks - escolhe o apropriado para o ambiente
+  const isNetlify = useIsNetlify();
+  const netlifyWebhook = useNetlifyWebhook();
+  
+  // Usar webhook local apenas em desenvolvimento
+  if (!isNetlify) {
+    useSimpleWebhook();
+  }
 
   // Estados locais
   const [searchTerm, setSearchTerm] = useState('');
@@ -295,7 +302,9 @@ export function KanbanBoard() {
               {/* Status do webhook */}
               <div className="flex items-center space-x-2">
                 <Wifi className="h-4 w-4 text-green-500" />
-                <span className="text-xs text-green-600">Webhook ativo</span>
+                <span className="text-xs text-green-600">
+                  {isNetlify ? 'Webhook Netlify ativo' : 'Webhook local ativo'}
+                </span>
               </div>
               
               {/* Botão de configuração do webhook */}
@@ -309,14 +318,14 @@ export function KanbanBoard() {
                 Webhook
               </Button>
               
-              {/* Botão para simular webhook (apenas para demonstração) */}
+              {/* Botão para simular webhook */}
               <Button 
                 size="sm" 
                 variant="outline"
-                onClick={handleSimulateWebhook}
+                onClick={isNetlify ? netlifyWebhook.testWebhook : handleSimulateWebhook}
                 className="text-xs"
               >
-                Simular Webhook
+                {isNetlify ? 'Testar Netlify' : 'Simular Webhook'}
               </Button>
               
               <div className="flex items-center space-x-2 text-xs text-gray-500">
@@ -386,7 +395,9 @@ export function KanbanBoard() {
             {/* Status do webhook */}
             <div className="flex items-center space-x-2 bg-green-50 px-2 py-1 rounded-full">
               <Wifi className="h-3 w-3 text-green-500" />
-              <span className="text-xs text-green-600">Webhook ativo</span>
+              <span className="text-xs text-green-600">
+                {isNetlify ? 'Netlify' : 'Local'}
+              </span>
             </div>
             
             {/* Botão de configuração do webhook */}
@@ -404,10 +415,10 @@ export function KanbanBoard() {
             <Button 
               size="sm" 
               variant="outline"
-              onClick={handleSimulateWebhook}
+              onClick={isNetlify ? netlifyWebhook.testWebhook : handleSimulateWebhook}
               className="text-xs"
             >
-              Simular
+              {isNetlify ? 'Testar' : 'Simular'}
             </Button>
           </div>
         </div>

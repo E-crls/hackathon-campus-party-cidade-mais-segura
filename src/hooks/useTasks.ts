@@ -74,7 +74,9 @@ export interface UpdateTaskData {
 }
 
 // Configuração da API
-const API_BASE_URL = 'http://localhost:3001/api'; // Substitua pela sua API
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:3001/api' 
+  : `${window.location.origin}/api`; // Usa o domínio atual em produção
 
 
 // Função para converter dados do webhook em Task
@@ -326,6 +328,12 @@ export function useTaskWebhooks() {
     // Configurar WebSocket para receber atualizações em tempo real
     const connectWebSocket = () => {
       try {
+        // Só conecta WebSocket em desenvolvimento (localhost)
+        if (process.env.NODE_ENV !== 'development') {
+          console.log('🌐 WebSocket não disponível em produção, usando localStorage como fallback');
+          return;
+        }
+        
         // Conectar ao WebSocket do servidor local
         const ws = new WebSocket('ws://localhost:3001');
         wsRef.current = ws;
