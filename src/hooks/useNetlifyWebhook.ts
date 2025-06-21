@@ -9,8 +9,64 @@ export function useNetlifyWebhook() {
   useEffect(() => {
     console.log('🚀 Iniciando webhook do Netlify...');
 
-    // Função para processar webhooks pendentes
-    const processWebhooks = () => {
+    // Função para buscar webhooks pendentes da API
+    const fetchPendingWebhooks = async () => {
+      console.log('🔄 [FRONTEND] Verificando webhooks pendentes na API...');
+      try {
+        const response = await fetch('/.netlify/functions/webhook-inject', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          console.warn('⚠️ Erro ao buscar webhooks:', response.status);
+          console.warn('❌ [FRONTEND] Falha ao buscar webhooks da API');
+          return;
+        }
+        
+        const data = await response.json();
+        console.log('📋 [FRONTEND] Resposta da API recebida:', JSON.stringify(data, null, 2));
+        
+        if (data.success && data.webhooks.length > 0) {
+          console.log(`📥 Recebidos ${data.webhooks.length} webhooks da API`);
+          console.log('🔍 [FRONTEND] Webhooks recebidos da API:', JSON.stringify(data.webhooks, null, 2));
+          
+          data.webhooks.forEach((webhookData: WebhookIncident) => {
+            // Converter webhook em task
+            const newTask = convertWebhookToTask(webhookData);
+            
+            // Adicionar ao cache do TanStack Query
+            queryClient.setQueryData(['tasks'], (oldTasks: any[] = []) => [
+              newTask,
+              ...oldTasks
+            ]);
+            
+            console.log('✅ Task criada via webhook Netlify:', newTask.title);
+            console.log('🎯 [FRONTEND] Nova task adicionada ao cache:', JSON.stringify(newTask, null, 2));
+            
+            // Notificação visual
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Nova Ocorrência!', {
+                body: `${newTask.title} em ${newTask.location}`,
+                icon: '/favicon.ico'
+              });
+            }
+          });
+          
+          console.log(`📦 Processados ${data.webhooks.length} webhooks da API`);
+          console.log('🏁 [FRONTEND] Todos os webhooks foram processados e adicionados à interface');
+        }
+        
+      } catch (error) {
+        console.error('❌ Erro ao buscar webhooks pendentes:', error);
+        console.error('💥 [FRONTEND] Erro na requisição para webhook-checker:', error);
+      }
+    };
+
+    // Função para processar webhooks do localStorage (fallback)
+    const processLocalWebhooks = () => {
       const pendingWebhooks = localStorage.getItem('pending_webhooks');
       if (pendingWebhooks) {
         try {
@@ -26,7 +82,7 @@ export function useNetlifyWebhook() {
               ...oldTasks
             ]);
             
-            console.log('✅ Task criada via webhook Netlify:', newTask.title);
+            console.log('✅ Task criada via webhook localStorage:', newTask.title);
             
             // Notificação visual
             if ('Notification' in window && Notification.permission === 'granted') {
@@ -40,30 +96,36 @@ export function useNetlifyWebhook() {
           // Limpar webhooks processados
           localStorage.removeItem('pending_webhooks');
           
-          console.log(`📦 Processados ${webhooks.length} webhooks`);
+          console.log(`📦 Processados ${webhooks.length} webhooks do localStorage`);
           
         } catch (error) {
-          console.error('❌ Erro ao processar webhooks:', error);
+          console.error('❌ Erro ao processar webhooks do localStorage:', error);
         }
       }
     };
 
     // Processar webhooks pendentes imediatamente
-    processWebhooks();
+    fetchPendingWebhooks();
+    processLocalWebhooks();
 
     // Escutar mudanças no localStorage (para múltiplas abas)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'pending_webhooks' && e.newValue) {
         console.log('📨 Novo webhook detectado via storage event');
-        processWebhooks();
+        processLocalWebhooks();
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
 
-    // Polling mais otimizado para produção
-    const interval = setInterval(() => {
-      processWebhooks();
+    // Polling para buscar webhooks da API (mais agressivo)
+    const apiInterval = setInterval(() => {
+      fetchPendingWebhooks();
+    }, 2000); // A cada 2 segundos
+
+    // Polling para localStorage (fallback)
+    const localInterval = setInterval(() => {
+      processLocalWebhooks();
     }, 3000); // A cada 3 segundos
 
     // Solicitar permissão para notificações
@@ -77,7 +139,8 @@ export function useNetlifyWebhook() {
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      clearInterval(apiInterval);
+      clearInterval(localInterval);
       console.log('🔴 Webhook Netlify desconectado');
     };
   }, [queryClient]);

@@ -11,6 +11,18 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/api/webhook/check"
+  to = "/.netlify/functions/webhook-checker"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/webhook/inject"
+  to = "/.netlify/functions/webhook-inject"
+  status = 200
+  force = true
+
 [[headers]]
   for = "/.netlify/functions/*"
   [headers.values]
