@@ -74,7 +74,7 @@ export interface UpdateTaskData {
 }
 
 // Configuração da API
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
+const API_BASE_URL = import.meta.env.DEV 
   ? 'http://localhost:3001/api' 
   : `${window.location.origin}/api`; // Usa o domínio atual em produção
 
@@ -329,7 +329,7 @@ export function useTaskWebhooks() {
     const connectWebSocket = () => {
       try {
         // Só conecta WebSocket em desenvolvimento (localhost)
-        if (process.env.NODE_ENV !== 'development') {
+        if (!import.meta.env.DEV) {
           console.log('🌐 WebSocket não disponível em produção, usando localStorage como fallback');
           return;
         }

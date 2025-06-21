@@ -125,7 +125,7 @@ export function useIsNetlify() {
   const isNetlify = typeof window !== 'undefined' && 
     (window.location.hostname.includes('netlify.app') || 
      window.location.hostname.includes('netlify.com') ||
-     process.env.NODE_ENV === 'production');
+     !import.meta.env.DEV);
   
   return isNetlify;
 } 
