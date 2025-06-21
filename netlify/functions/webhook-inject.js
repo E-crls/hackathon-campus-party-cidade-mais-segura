@@ -1,5 +1,6 @@
-// Armazenamento temporário para webhook injection
+// Armazenamento temporário para webhook injection (com timestamp para múltiplas sessões)
 let pendingInjects = [];
+const WEBHOOK_TTL = 60000; // 60 segundos de vida útil para cada webhook
 
 exports.handler = async (event, context) => {
   console.log('💉 [WEBHOOK-INJECT] Chamada recebida:', event.httpMethod);
@@ -52,12 +53,22 @@ exports.handler = async (event, context) => {
         };
       }
 
-      // Adicionar na lista de injeções pendentes
-      pendingInjects.push({
+      // Adicionar na lista de injeções pendentes com timestamp
+      const webhookWithTimestamp = {
         ...normalizedData,
         injected_at: new Date().toISOString(),
-        id: normalizedData.incident_id || Date.now().toString()
-      });
+        injected_timestamp: Date.now(),
+        id: normalizedData.incident_id || Date.now().toString(),
+        session_id: Math.random().toString(36).substr(2, 9) // ID único para rastreamento
+      };
+      
+      pendingInjects.push(webhookWithTimestamp);
+      
+      // Limpar webhooks expirados (mais de 60 segundos)
+      const now = Date.now();
+      pendingInjects = pendingInjects.filter(webhook => 
+        (now - webhook.injected_timestamp) < WEBHOOK_TTL
+      );
 
       console.log('✅ [WEBHOOK-INJECT] Webhook adicionado para injeção');
       console.log(`📊 [WEBHOOK-INJECT] Total pendente: ${pendingInjects.length}`);
@@ -83,20 +94,35 @@ exports.handler = async (event, context) => {
     }
   }
 
-  // GET: Retornar webhooks para injeção
+  // GET: Retornar webhooks para injeção (sem limpar para suportar múltiplas sessões)
   if (event.httpMethod === 'GET') {
-    console.log(`📤 [WEBHOOK-INJECT] Retornando ${pendingInjects.length} webhooks para injeção`);
+    // Obter parâmetro de timestamp da última consulta desta sessão
+    const lastCheck = event.queryStringParameters?.since || '0';
+    const lastCheckTimestamp = parseInt(lastCheck);
     
-    const injectsToReturn = [...pendingInjects];
-    pendingInjects = []; // Limpar após retornar
-
+    // Limpar webhooks expirados
+    const now = Date.now();
+    pendingInjects = pendingInjects.filter(webhook => 
+      (now - webhook.injected_timestamp) < WEBHOOK_TTL
+    );
+    
+    // Retornar apenas webhooks mais novos que a última consulta desta sessão
+    const newWebhooks = pendingInjects.filter(webhook => 
+      webhook.injected_timestamp > lastCheckTimestamp
+    );
+    
+    console.log(`📤 [WEBHOOK-INJECT] Retornando ${newWebhooks.length} webhooks novos para injeção`);
+    console.log(`📊 [WEBHOOK-INJECT] Total na fila: ${pendingInjects.length}, Novos desde ${lastCheck}: ${newWebhooks.length}`);
+    
     return {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         success: true,
-        webhooks: injectsToReturn,
-        count: injectsToReturn.length,
+        webhooks: newWebhooks,
+        count: newWebhooks.length,
+        total_in_queue: pendingInjects.length,
+        current_timestamp: now,
         timestamp: new Date().toISOString()
       })
     };

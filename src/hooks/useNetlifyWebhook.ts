@@ -1,19 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { convertWebhookToTask, type WebhookIncident } from './useTasks';
 
-// Hook otimizado para funcionar no Netlify
+// Hook otimizado para funcionar no Netlify (com suporte a múltiplas sessões)
 export function useNetlifyWebhook() {
   const queryClient = useQueryClient();
+  
+  // Timestamp da última verificação para esta sessão
+  const [lastCheckTimestamp, setLastCheckTimestamp] = useState<number>(Date.now());
 
   useEffect(() => {
-    console.log('🚀 Iniciando webhook do Netlify...');
+    console.log('🚀 Iniciando webhook do Netlify (Multi-sessão)...');
+    console.log('🔍 [MULTI-SESSION] Timestamp inicial desta sessão:', lastCheckTimestamp);
 
     // Função para buscar webhooks pendentes da API
     const fetchPendingWebhooks = async () => {
       console.log('🔄 [FRONTEND] Verificando webhooks pendentes na API...');
       try {
-        const response = await fetch('/.netlify/functions/webhook-inject', {
+        const response = await fetch(`/.netlify/functions/webhook-inject?since=${lastCheckTimestamp}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -28,6 +32,12 @@ export function useNetlifyWebhook() {
         
         const data = await response.json();
         console.log('📋 [FRONTEND] Resposta da API recebida:', JSON.stringify(data, null, 2));
+        
+        // Atualizar timestamp da última verificação
+        if (data.current_timestamp) {
+          console.log('⏰ [MULTI-SESSION] Atualizando timestamp:', lastCheckTimestamp, '→', data.current_timestamp);
+          setLastCheckTimestamp(data.current_timestamp);
+        }
         
         if (data.success && data.webhooks.length > 0) {
           console.log(`📥 Recebidos ${data.webhooks.length} webhooks da API`);
@@ -56,6 +66,7 @@ export function useNetlifyWebhook() {
           });
           
           console.log(`📦 Processados ${data.webhooks.length} webhooks da API`);
+          console.log(`📊 [FRONTEND] Total na fila global: ${data.total_in_queue || 'N/A'}`);
           console.log('🏁 [FRONTEND] Todos os webhooks foram processados e adicionados à interface');
         }
         
