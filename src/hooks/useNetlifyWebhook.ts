@@ -8,10 +8,14 @@ export function useNetlifyWebhook() {
   
   // Timestamp da última verificação para esta sessão
   const [lastCheckTimestamp, setLastCheckTimestamp] = useState<number>(Date.now());
+  
+  // Set para controlar IDs já processados (evitar duplicatas)
+  const [processedIds, setProcessedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    console.log('🚀 Iniciando webhook do Netlify (Multi-sessão)...');
+    console.log('🚀 Iniciando webhook do Netlify (Multi-sessão com deduplicação)...');
     console.log('🔍 [MULTI-SESSION] Timestamp inicial desta sessão:', lastCheckTimestamp);
+    console.log('🛡️ [DEDUPLICAÇÃO] Sistema ativo para evitar tasks duplicadas');
 
     // Função para buscar webhooks pendentes da API
     const fetchPendingWebhooks = async () => {
@@ -44,17 +48,33 @@ export function useNetlifyWebhook() {
           console.log('🔍 [FRONTEND] Webhooks recebidos da API:', JSON.stringify(data.webhooks, null, 2));
           
           data.webhooks.forEach((webhookData: WebhookIncident) => {
+            const webhookId = webhookData.incident_id;
+            
+            // Verificar se já foi processado (evitar duplicatas)
+            if (processedIds.has(webhookId)) {
+              console.log('🔄 [DEDUPLICAÇÃO] Webhook já processado, ignorando:', webhookId);
+              return;
+            }
+            
+            // Marcar como processado
+            setProcessedIds(prev => new Set(prev).add(webhookId));
+            
             // Converter webhook em task
             const newTask = convertWebhookToTask(webhookData);
             
-            // Adicionar ao cache do TanStack Query
-            queryClient.setQueryData(['tasks'], (oldTasks: any[] = []) => [
-              newTask,
-              ...oldTasks
-            ]);
-            
-            console.log('✅ Task criada via webhook Netlify:', newTask.title);
-            console.log('🎯 [FRONTEND] Nova task adicionada ao cache:', JSON.stringify(newTask, null, 2));
+            // Verificar se a task já existe no cache (dupla proteção)
+            queryClient.setQueryData(['tasks'], (oldTasks: any[] = []) => {
+              const existingTask = oldTasks.find(task => task.id === newTask.id || task.incident_id === webhookId);
+              if (existingTask) {
+                console.log('🔄 [DEDUPLICAÇÃO] Task já existe no cache, ignorando:', webhookId);
+                return oldTasks;
+              }
+              
+              console.log('✅ Task criada via webhook Netlify:', newTask.title);
+              console.log('🎯 [FRONTEND] Nova task adicionada ao cache:', JSON.stringify(newTask, null, 2));
+              
+              return [newTask, ...oldTasks];
+            });
             
             // Notificação visual
             if ('Notification' in window && Notification.permission === 'granted') {
@@ -139,6 +159,12 @@ export function useNetlifyWebhook() {
       processLocalWebhooks();
     }, 3000); // A cada 3 segundos
 
+    // Limpeza automática de IDs processados (a cada 5 minutos)
+    const cleanupInterval = setInterval(() => {
+      console.log('🧹 [DEDUPLICAÇÃO] Limpando IDs antigos...');
+      setProcessedIds(new Set()); // Reset do controle de duplicatas
+    }, 300000); // 5 minutos
+
     // Solicitar permissão para notificações
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().then(permission => {
@@ -152,14 +178,16 @@ export function useNetlifyWebhook() {
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(apiInterval);
       clearInterval(localInterval);
+      clearInterval(cleanupInterval);
       console.log('🔴 Webhook Netlify desconectado');
     };
   }, [queryClient]);
 
   // Função para testar webhook manualmente
   const testWebhook = () => {
+    const uniqueId = `test-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
     const testData: WebhookIncident = {
-      incident_id: `test-${Date.now()}`,
+      incident_id: uniqueId,
       user_phone: '+5561999999999',
       collected_data: {
         type: 'lixo',
@@ -185,7 +213,7 @@ export function useNetlifyWebhook() {
     existing.push(testData);
     localStorage.setItem('pending_webhooks', JSON.stringify(existing));
     
-    console.log('🧪 Webhook de teste enviado');
+    console.log('🧪 Webhook de teste enviado com ID único:', uniqueId);
   };
 
   return {

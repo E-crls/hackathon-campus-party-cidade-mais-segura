@@ -180,4 +180,24 @@ curl -X POST "https://campus-party-cidade-mais-segura.netlify.app/api/webhook/in
 
 ---
 
-💡 **Dica**: Use o endpoint `/api/webhook/inject` - ele vai fazer a task aparecer na interface automaticamente!
+## 🌐 **Teste Multi-Sessão**
+
+**Para testar com múltiplos usuários/abas:**
+
+1. **Abra o site em várias abas/dispositivos**
+2. **Execute o webhook** de qualquer lugar
+3. **TODAS as sessões** vão receber a task automaticamente! ✨
+
+### **Logs que você verá (cada sessão):**
+
+```
+🚀 Iniciando webhook do Netlify (Multi-sessão)...
+🔍 [MULTI-SESSION] Timestamp inicial desta sessão: 1703123456789
+⏰ [MULTI-SESSION] Atualizando timestamp: 1703123456789 → 1703123460000
+📊 [FRONTEND] Total na fila global: 1
+🎯 [FRONTEND] Nova task adicionada ao cache
+```
+
+---
+
+💡 **Dica**: Use o endpoint `/api/webhook/inject` - ele vai fazer a task aparecer na interface de **TODOS os usuários** simultaneamente!
