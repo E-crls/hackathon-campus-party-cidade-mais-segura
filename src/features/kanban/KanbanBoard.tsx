@@ -20,10 +20,6 @@ import {
   Wifi,
   Settings,
   Phone,
-  Image,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
   Satellite
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
