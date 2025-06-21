@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
-// Tipos para webhook
+
 export interface WebhookIncident {
   incident_id: string;
   user_phone: string;
@@ -24,10 +24,11 @@ export interface WebhookIncident {
   timestamp: string;
 }
 
-// Tipos para as tasks (adaptado para trabalhar com webhook)
+
 export interface Task {
   id: string;
-  incident_id?: string; // ID do incidente do webhook
+  incident_id?: string;
+  source: 'population' | 'satellite';
   title: string;
   description: string;
   type: 'trash' | 'lighting' | 'fire' | 'flood' | 'crime';
@@ -42,8 +43,8 @@ export interface Task {
   dueDate: string;
   createdAt: string;
   aiConfidence: number;
-  userPhone?: string; // Telefone do usuário que reportou
-  photos?: string[]; // Fotos em base64
+  userPhone?: string;
+  photos?: string[];
   classification?: 'validated' | 'pending' | 'rejected';
 }
 
@@ -59,6 +60,7 @@ export interface CreateTaskData {
     lng: number;
   };
   dueDate: string;
+  source?: 'population' | 'satellite';
   incident_id?: string;
   userPhone?: string;
   photos?: string[];
@@ -73,15 +75,15 @@ export interface UpdateTaskData {
   dueDate?: string;
 }
 
-// Configuração da API
+
 const API_BASE_URL = import.meta.env.DEV 
   ? 'http://localhost:3001/api' 
   : `${window.location.origin}/api`; // Usa o domínio atual em produção
 
 
-// Função para converter dados do webhook em Task
+
 export function convertWebhookToTask(webhookData: WebhookIncident): Task {
-  // Mapear tipos do webhook para tipos internos
+
   const typeMapping: Record<string, Task['type']> = {
     'lixo': 'trash',
     'iluminacao': 'lighting',
@@ -90,7 +92,7 @@ export function convertWebhookToTask(webhookData: WebhookIncident): Task {
     'inundacao': 'flood'
   };
 
-  // Mapear prioridades do webhook para prioridades internas
+
   const priorityMapping: Record<string, Task['priority']> = {
     'baixa': 'Baixa',
     'media': 'Média',
@@ -98,7 +100,7 @@ export function convertWebhookToTask(webhookData: WebhookIncident): Task {
     'critica': 'Crítica'
   };
 
-  // Gerar título baseado no tipo
+
   const titleMapping: Record<Task['type'], string> = {
     'trash': 'Limpeza de resíduos reportada',
     'lighting': 'Problema de iluminação reportado',
@@ -113,6 +115,7 @@ export function convertWebhookToTask(webhookData: WebhookIncident): Task {
   return {
     id: webhookData.incident_id,
     incident_id: webhookData.incident_id,
+    source: 'population',
     title: titleMapping[mappedType],
     description: webhookData.collected_data.description,
     type: mappedType,
@@ -121,7 +124,7 @@ export function convertWebhookToTask(webhookData: WebhookIncident): Task {
     assignee: 'Aguardando atribuição',
     location: webhookData.collected_data.location,
     coordinates: webhookData.collected_data.coordinates,
-    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 dias a partir de hoje
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     createdAt: webhookData.timestamp.split('T')[0],
     aiConfidence: webhookData.ai_analysis.confidence,
     userPhone: webhookData.user_phone,
@@ -160,9 +163,10 @@ class TasksAPI {
       const newTask: Task = {
         id: Date.now().toString(),
         ...data,
+        source: data.source || 'satellite',
         status: 'todo',
         createdAt: new Date().toISOString().split('T')[0],
-        aiConfidence: Math.floor(Math.random() * 30) + 70, // 70-100%
+        aiConfidence: Math.floor(Math.random() * 30) + 70,
       };
       return newTask;
     }
@@ -205,6 +209,7 @@ class TasksAPI {
 const mockTasks: Task[] = [
   {
     id: '1',
+    source: 'satellite',
     title: 'Limpeza de lixo acumulado',
     description: 'Detecção satelital: acúmulo de resíduos em área urbana (imagens Sentinel-2)',
     type: 'trash',
@@ -218,6 +223,7 @@ const mockTasks: Task[] = [
   },
   {
     id: '2',
+    source: 'satellite',
     title: 'Reparo de iluminação pública',
     description: 'Análise noturna satelital detectou ausência de iluminação (NASA VIIRS)',
     type: 'lighting',
@@ -258,8 +264,7 @@ export function useTasks() {
         newTask
       ]);
       
-      // Mostra notificação de sucesso
-      console.log('Task criada com sucesso:', newTask.title);
+
     },
     onError: (error) => {
       console.error('Erro ao criar task:', error);
@@ -277,7 +282,7 @@ export function useTasks() {
         )
       );
       
-      console.log('Task atualizada:', updatedTask.title);
+
     },
     onError: (error) => {
       console.error('Erro ao atualizar task:', error);
@@ -293,7 +298,7 @@ export function useTasks() {
         oldTasks.filter(task => task.id !== deletedId)
       );
       
-      console.log('Task deletada:', deletedId);
+
     },
     onError: (error) => {
       console.error('Erro ao deletar task:', error);
@@ -330,7 +335,6 @@ export function useTaskWebhooks() {
       try {
         // Só conecta WebSocket em desenvolvimento (localhost)
         if (!import.meta.env.DEV) {
-          console.log('🌐 WebSocket não disponível em produção, usando localStorage como fallback');
           return;
         }
         
@@ -339,7 +343,7 @@ export function useTaskWebhooks() {
         wsRef.current = ws;
 
         ws.onopen = () => {
-          console.log('🔗 Conectado ao webhook de tasks');
+  
         };
 
         ws.onmessage = (event) => {
@@ -357,12 +361,7 @@ export function useTaskWebhooks() {
                 ...oldTasks
               ]);
               
-              console.log('🚨 Nova ocorrência recebida via webhook:', {
-                type: data.collected_data.type,
-                location: data.collected_data.location,
-                priority: data.ai_analysis.priority,
-                confidence: data.ai_analysis.confidence
-              });
+
               
               // Notificação visual (você pode implementar toast aqui)
               if ('Notification' in window && Notification.permission === 'granted') {
@@ -382,7 +381,7 @@ export function useTaskWebhooks() {
                   ...oldTasks,
                   data.task
                 ]);
-                console.log('📝 Nova task recebida via webhook:', data.task.title);
+
                 break;
                 
               case 'TASK_UPDATED':
@@ -391,18 +390,18 @@ export function useTaskWebhooks() {
                     task.id === data.task.id ? data.task : task
                   )
                 );
-                console.log('✏️ Task atualizada via webhook:', data.task.title);
+
                 break;
                 
               case 'TASK_DELETED':
                 queryClient.setQueryData(['tasks'], (oldTasks: Task[] = []) =>
                   oldTasks.filter(task => task.id !== data.taskId)
                 );
-                console.log('🗑️ Task removida via webhook:', data.taskId);
+
                 break;
                 
               default:
-                console.log('📨 Evento webhook desconhecido:', data);
+
             }
           } catch (error) {
             console.error('Erro ao processar mensagem webhook:', error);
@@ -414,13 +413,11 @@ export function useTaskWebhooks() {
         };
 
         ws.onclose = () => {
-          console.log('🔌 WebSocket desconectado. Tentando reconectar...');
           // Reconectar após 5 segundos
           setTimeout(connectWebSocket, 5000);
         };
 
       } catch (error) {
-        console.warn('WebSocket não disponível, usando polling como fallback');
         // Fallback: polling a cada 30 segundos
         const interval = setInterval(() => {
           queryClient.invalidateQueries({ queryKey: ['tasks'] });

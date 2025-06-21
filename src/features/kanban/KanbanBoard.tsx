@@ -18,13 +18,13 @@ import {
   User,
   FileText,
   Wifi,
-
   Settings,
   Phone,
   Image,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Satellite
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -79,6 +79,7 @@ export function KanbanBoard() {
     assignee: '',
     location: '',
     dueDate: '',
+    source: 'satellite',
   });
 
   const filteredTasks = tasks.filter(task => {
@@ -134,6 +135,7 @@ export function KanbanBoard() {
         assignee: newTask.assignee || 'Não atribuído',
         location: newTask.location || 'Local não especificado',
         dueDate: newTask.dueDate || new Date().toISOString().split('T')[0],
+        source: newTask.source || 'satellite',
       };
       
       createTask(taskData);
@@ -145,6 +147,7 @@ export function KanbanBoard() {
         assignee: '',
         location: '',
         dueDate: '',
+        source: 'satellite',
       });
       setShowNewTaskModal(false);
     }
@@ -180,6 +183,32 @@ export function KanbanBoard() {
       'Baixa': 'bg-blue-100 text-blue-700',
     };
     return colors[priority];
+  };
+
+  const getTypeTranslation = (type: Task['type']) => {
+    const translations = {
+      trash: 'Lixo e Resíduos',
+      lighting: 'Iluminação Pública',
+      fire: 'Incêndio',
+      flood: 'Alagamento',
+      crime: 'Segurança Pública',
+    };
+    return translations[type] || type;
+  };
+
+  const formatDateBR = (dateString: string) => {
+    // Se a data já está no formato brasileiro, retorna como está
+    if (dateString.includes('/')) {
+      return dateString;
+    }
+    
+    // Converte de YYYY-MM-DD para DD/MM/YYYY
+    try {
+      const [year, month, day] = dateString.split('-');
+      return `${day}/${month}/${year}`;
+    } catch {
+      return dateString; // Retorna original se não conseguir converter
+    }
   };
 
   // Função para simular webhook (para demonstração)
@@ -297,37 +326,7 @@ export function KanbanBoard() {
               </p>
             </div>
             
-            {/* Botões e Status - Desktop */}
-            <div className="hidden lg:flex items-center space-x-4">
-              {/* Status do webhook */}
-              <div className="flex items-center space-x-2">
-                <Wifi className="h-4 w-4 text-green-500" />
-                <span className="text-xs text-green-600">
-                  {isNetlify ? 'Webhook Netlify ativo' : 'Webhook local ativo'}
-                </span>
-              </div>
-              
-              {/* Botão de configuração do webhook */}
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => setShowWebhookInfo(true)}
-                className="text-xs"
-              >
-                <Settings className="h-3 w-3 mr-1" />
-                Webhook
-              </Button>
-              
-              {/* Botão para simular webhook */}
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={isNetlify ? netlifyWebhook.testWebhook : handleSimulateWebhook}
-                className="text-xs"
-              >
-                {isNetlify ? 'Testar Netlify' : 'Simular Webhook'}
-              </Button>
-              
+            <div className="hidden lg:flex items-center space-x-4">           
               <div className="flex items-center space-x-2 text-xs text-gray-500">
                 <Calendar className="h-3 w-3" />
                 <span>20 de dezembro de 2024</span>
@@ -335,9 +334,7 @@ export function KanbanBoard() {
             </div>
           </div>
 
-          {/* Filtros e Busca */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Busca */}
             <div className="flex-1 min-w-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -351,19 +348,18 @@ export function KanbanBoard() {
               </div>
             </div>
             
-            {/* Filtros e Botões */}
             <div className="flex flex-wrap gap-2 sm:gap-3">
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
                 className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm min-w-[100px]"
               >
-                <option value="all">Tipos</option>
-                <option value="trash">Lixo</option>
-                <option value="lighting">Iluminação</option>
+                <option value="all">Todos os Tipos</option>
+                <option value="trash">Lixo e Resíduos</option>
+                <option value="lighting">Iluminação Pública</option>
                 <option value="fire">Incêndio</option>
-                <option value="flood">Inundação</option>
-                <option value="crime">Crime</option>
+                <option value="flood">Alagamento</option>
+                <option value="crime">Segurança Pública</option>
               </select>
 
               <select
@@ -459,6 +455,7 @@ export function KanbanBoard() {
                         onDragEnd={handleDragEnd}
                         isDragging={draggedTask === task.id}
                         onTaskClick={setShowTaskDetails}
+                        formatDateBR={formatDateBR}
                       />
                     ))}
                     
@@ -486,13 +483,15 @@ export function KanbanBoard() {
 
         {/* Modal de Detalhes da Tarefa */}
         {showTaskDetails && (
-          <TaskDetailsModal
-            task={tasks.find(t => t.id === showTaskDetails)}
-            onClose={() => setShowTaskDetails(null)}
-            getTypeIcon={getTypeIcon}
-            getTypeColor={getTypeColor}
-            getPriorityColor={getPriorityColor}
-          />
+                      <TaskDetailsModal 
+              task={tasks.find(t => t.id === showTaskDetails)}
+              onClose={() => setShowTaskDetails(null)}
+              getTypeIcon={getTypeIcon}
+              getTypeColor={getTypeColor}
+              getPriorityColor={getPriorityColor}
+              getTypeTranslation={getTypeTranslation}
+              formatDateBR={formatDateBR}
+            />
         )}
 
         {/* Modal de Informações do Webhook */}
@@ -573,11 +572,11 @@ function NewTaskModal({ newTask, setNewTask, onSave, onClose }: NewTaskModalProp
                   onChange={(e) => setNewTask({ ...newTask, type: e.target.value as Task['type'] })}
                   className="w-full pl-4 pr-10 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm"
                 >
-                  <option value="trash">Lixo</option>
-                  <option value="lighting">Iluminação</option>
+                  <option value="trash">Lixo e Resíduos</option>
+                  <option value="lighting">Iluminação Pública</option>
                   <option value="fire">Incêndio</option>
-                  <option value="flood">Inundação</option>
-                  <option value="crime">Crime</option>
+                  <option value="flood">Alagamento</option>
+                  <option value="crime">Segurança Pública</option>
                 </select>
               </div>
 
@@ -626,7 +625,7 @@ function NewTaskModal({ newTask, setNewTask, onSave, onClose }: NewTaskModalProp
               </div>
             </div>
 
-            {/* Linha 3: Data e Status */}
+            {/* Linha 3: Data e Fonte */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -640,7 +639,19 @@ function NewTaskModal({ newTask, setNewTask, onSave, onClose }: NewTaskModalProp
                 />
               </div>
 
-
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fonte da Ocorrência
+                </label>
+                <select
+                  value={newTask.source || 'satellite'}
+                  onChange={(e) => setNewTask({ ...newTask, source: e.target.value as 'population' | 'satellite' })}
+                  className="w-full pl-4 pr-10 py-2 border border-gray-200 rounded-lg bg-white text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors shadow-sm text-sm"
+                >
+                  <option value="satellite">🛰️ Detecção Satelital</option>
+                  <option value="population">👥 Reportado pela População</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -670,9 +681,11 @@ interface TaskDetailsModalProps {
   getTypeIcon: (type: Task['type']) => React.ComponentType<{ className?: string }>;
   getTypeColor: (type: Task['type']) => string;
   getPriorityColor: (priority: Task['priority']) => string;
+  getTypeTranslation: (type: Task['type']) => string;
+  formatDateBR: (dateString: string) => string;
 }
 
-function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorityColor }: TaskDetailsModalProps) {
+function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorityColor, getTypeTranslation, formatDateBR }: TaskDetailsModalProps) {
   if (!task) return null;
 
   const TypeIcon = getTypeIcon(task.type);
@@ -713,6 +726,25 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">
+                    Fonte da Ocorrência
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    {task.source === 'population' ? (
+                      <>
+                        <Phone className="h-4 w-4 text-green-500" />
+                        <span className="text-gray-900">Reportado pela População</span>
+                      </>
+                    ) : (
+                      <>
+                        <Satellite className="h-4 w-4 text-blue-500" />
+                        <span className="text-gray-900">Detecção Satelital</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">
                     Local
                   </label>
                   <div className="flex items-center space-x-2">
@@ -737,7 +769,7 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
                   </label>
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{task.dueDate}</span>
+                    <span className="text-gray-900">{formatDateBR(task.dueDate)}</span>
                   </div>
                 </div>
               </div>
@@ -749,9 +781,11 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
                   </label>
                   <div className="flex items-center space-x-2">
                     <TypeIcon className={cn('h-4 w-4', getTypeColor(task.type))} />
-                    <span className="text-gray-900 capitalize">{task.type}</span>
+                    <span className="text-gray-900">{getTypeTranslation(task.type)}</span>
                   </div>
                 </div>
+
+                
 
                 <div>
                   <label className="block text-sm font-medium text-gray-500 mb-1">
@@ -769,7 +803,7 @@ function TaskDetailsModal({ task, onClose, getTypeIcon, getTypeColor, getPriorit
                   </label>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{task.createdAt}</span>
+                    <span className="text-gray-900">{formatDateBR(task.createdAt)}</span>
                   </div>
                 </div>
               </div>
@@ -817,9 +851,10 @@ interface TaskCardProps {
   onDragEnd: () => void;
   isDragging: boolean;
   onTaskClick: (taskId: string) => void;
+  formatDateBR: (dateString: string) => string;
 }
 
-function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, onDragStart, onDragEnd, isDragging, onTaskClick }: TaskCardProps) {
+function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, onDragStart, onDragEnd, isDragging, onTaskClick, formatDateBR }: TaskCardProps) {
   const [showMoveOptions, setShowMoveOptions] = useState(false);
   const TypeIcon = getTypeIcon(task.type);
 
@@ -847,22 +882,25 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
           <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', getPriorityColor(task.priority))}>
             {task.priority}
           </span>
-          {/* Indicador de origem webhook */}
-          {task.incident_id && (
-            <div className="flex items-center space-x-1">
-              <Phone className="h-3 w-3 text-green-500" />
-              {task.photos && task.photos.length > 0 && (
-                                  <Image className="h-3 w-3 text-blue-500" />
-              )}
-              {task.classification && (
-                <div className="flex items-center">
-                  {task.classification === 'validated' && <CheckCircle className="h-3 w-3 text-green-500" />}
-                  {task.classification === 'pending' && <AlertCircle className="h-3 w-3 text-yellow-500" />}
-                  {task.classification === 'rejected' && <XCircle className="h-3 w-3 text-red-500" />}
-                </div>
-              )}
-            </div>
-          )}
+          {/* Badge discreto de fonte */}
+          <div className={cn(
+            'px-2 py-0.5 rounded-full text-xs font-medium flex items-center space-x-1',
+            task.source === 'population' 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : 'bg-blue-50 text-blue-700 border border-blue-200'
+          )}>
+            {task.source === 'population' ? (
+              <>
+                <Phone className="h-3 w-3" />
+                <span>População</span>
+              </>
+            ) : (
+              <>
+                <Satellite className="h-3 w-3" />
+                <span>Satélite</span>
+              </>
+            )}
+          </div>
         </div>
         <div className="relative">
           <button
@@ -907,7 +945,7 @@ function TaskCard({ task, onMove, getTypeIcon, getTypeColor, getPriorityColor, o
         <div className="flex items-center justify-between">
           <div className="flex items-center text-xs text-gray-500">
             <Clock className="h-3 w-3 mr-1" />
-            <span>{task.dueDate}</span>
+            <span>{formatDateBR(task.dueDate)}</span>
           </div>
           
           <div className="flex items-center text-xs">
